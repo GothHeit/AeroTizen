@@ -8,6 +8,7 @@
   "home.allApps": "Toutes les applis",
   "home.homeApps": "Applis de l’accueil",
   "home.emptyApps": "Aucune application trouvée.",
+  "home.emptyAppsHint": "Appuyez sur Gauche pour les paramètres et les entrées.",
   "home.backToTop": "Retour en haut",
   "home.continueWatching": "Continuer à regarder",
   "home.appActions": "Actions de l’application",

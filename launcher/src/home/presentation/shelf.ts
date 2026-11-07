@@ -30,12 +30,19 @@ export interface ShelfFeature {
   readonly title: string;
 }
 
-export const getContinueFeature = (item: ContinueItem): Omit<ShelfFeature, "kicker"> => ({
+/** Films and specials report season or episode 0, so they get no episode line, as on the classic card. */
+export const getContinueFeature = (
+  item: ContinueItem,
+  formatEpisode: (season: number, episode: number) => string,
+): Omit<ShelfFeature, "kicker"> => ({
   image: item.backgroundImage || item.image || item.thumbnailImage || null,
-  title: item.title,
-  detail: item.season || item.episode ? "S" + item.season + " · E" + item.episode : null,
+  title: item.title.trim(),
+  detail: item.season > 0 && item.episode > 0 ? formatEpisode(item.season, item.episode) : null,
   progress: item.duration > 0 ? Math.max(0, Math.min(1, item.playback / item.duration)) : null,
 });
+
+/** A CSS url() that survives quotes, spaces and parentheses in artwork addresses. */
+export const cssUrl = (path: string) => 'url("' + path.replace(/["\\\n\r]/g, (char) => encodeURIComponent(char)) + '")';
 
 /**
  * What sits behind the shelf for a saved choice: undefined lets each app show its own art,

@@ -5,7 +5,7 @@
   z-index: 9;
   width: 1920px;
   height: 1080px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.55);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--motion-duration-enter) ease-out;
@@ -23,11 +23,12 @@
   z-index: 10;
   display: flex;
   flex-direction: column;
-  width: 460px;
+  width: 540px;
   height: 1080px;
-  padding: 110px 48px 64px 56px;
-  background: linear-gradient(90deg, rgba(18, 18, 20, 0.98) 0%, rgba(18, 18, 20, 0.94) 72%, transparent 100%);
-  transform: translate3d(-480px, 0, 0);
+  padding: 110px 72px 64px 56px;
+  /* Solid behind the labels, so tiles under the panel never show through the text. */
+  background: linear-gradient(90deg, #121214 0%, #121214 80%, rgba(18, 18, 20, 0) 100%);
+  transform: translate3d(-560px, 0, 0);
   transition: transform var(--motion-duration-enter) cubic-bezier(0.32, 0.72, 0, 1);
 
   &[data-open="true"] {
@@ -54,8 +55,8 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 20px;
-  height: 70px;
-  padding: 0 22px;
+  min-height: 70px;
+  padding: 8px 22px;
   border-radius: 18px;
   font-size: 28px;
   font-weight: 500;
@@ -78,10 +79,13 @@
   }
 }
 
+/* Long input names (often Portuguese, often the TV's own) wrap to a second line before they cut. */
 .label {
+  display: -webkit-box;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .off {

@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   width: 1920px;
-  height: 840px;
+  height: 1080px;
   overflow: hidden;
   pointer-events: none;
   transition: opacity var(--motion-duration-viewport) cubic-bezier(0.23, 1, 0.32, 1);
@@ -26,7 +26,8 @@
   animation: shelf-in var(--motion-duration-viewport) ease-out;
 }
 
-/* Two static gradients darken the edges so text and tiles stay legible. */
+/* Two static gradients darken the edges so text and tiles stay legible. The picture runs
+   behind the top row and fades to the black base, so no seam shows under the tiles. */
 .scrim {
   position: absolute;
   top: 0;
@@ -37,10 +38,11 @@
     linear-gradient(
       180deg,
       rgba(0, 0, 0, 0.35) 0%,
-      transparent 22%,
-      transparent 48%,
-      rgba(0, 0, 0, 0.85) 82%,
-      var(--bg) 100%
+      transparent 18%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.7) 66%,
+      rgba(0, 0, 0, 0.88) 82%,
+      #000 100%
     ),
     linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, transparent 50%);
 }
@@ -48,8 +50,8 @@
 .meta {
   position: absolute;
   left: 96px;
-  bottom: 230px;
-  max-width: 1000px;
+  bottom: 470px;
+  max-width: 1100px;
   color: #fff;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
   transition: opacity var(--motion-duration-enter) ease-out;
@@ -61,22 +63,35 @@
 
 .kicker {
   margin-bottom: 14px;
+  overflow: hidden;
   font-size: 22px;
   letter-spacing: 3px;
   text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   opacity: 0.82;
 }
 
+/* Two lines at most; long names and Portuguese titles step down a size before they clamp. */
 .title {
+  display: -webkit-box;
+  overflow: hidden;
   font-size: 76px;
   font-weight: 700;
-  line-height: 1.04;
+  line-height: 1.08;
   letter-spacing: -1px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  &[data-long="true"] {
+    font-size: 60px;
+    letter-spacing: -0.5px;
+  }
 }
 
 .detail {
   margin-top: 16px;
-  font-size: 26px;
+  font-size: 28px;
   opacity: 0.86;
 }
 

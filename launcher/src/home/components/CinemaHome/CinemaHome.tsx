@@ -29,7 +29,10 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
     (id) => id === env.runtime.config.FIREPLACE_ID || !ready || apps.some((app) => app.id === id),
   );
   const others = apps.map((app) => app.id).filter((id) => !home.includes(id));
-  const topRow = home.slice(0, TOP_ROW).map((id) => "app:" + id);
+  // With no favourites, every app moves up into the top row's place under the shelf.
+  const firstIds = home.length ? home : others;
+  const restIds = home.length ? others : [];
+  const topRow = firstIds.slice(0, TOP_ROW).map((id) => "app:" + id);
   const shelfKey = topRow.includes(rail ?? selected) ? (rail ?? selected) : topRow[0];
   const shelfApp = shelfKey ? apps.find((app) => "app:" + app.id === shelfKey) || null : null;
   const { current } = useStore(env.runtime.wallpapers);
@@ -44,9 +47,11 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   }, [env, apps, inputs, items, ready, settings.home, settings.homeInitialized, draft]);
   return (
     <div class={styles.home} data-home data-cinema-home>
+      <div class={styles.base} />
       <SoftBackdrop image={backdrop} shown={scroll > 0} />
-      <TopShelf env={env} app={shelfApp} open={scroll === 0} covered={rail !== null} />
-      <div class={styles.status} aria-hidden={!active}>
+      <TopShelf env={env} app={shelfApp} open={scroll === 0} covered={rail !== null} empty={ready && !apps.length} />
+      {/* The clock steps aside in the grid, where scrolled rows pass beneath it. */}
+      <div class={styles.status} data-cinema-status data-shown={scroll === 0 ? "true" : "false"} aria-hidden={!active}>
         <HeaderStatus settings={env.settings} status={env.status} clock={env.runtime.clock} />
       </div>
       <div class={styles.viewport} data-home-viewport aria-hidden={!active}>
@@ -60,14 +65,13 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
             transitionDuration: crossesShelf ? SHELF_MOVE : ROW_MOVE,
           }}
         >
-          <CinemaTiles env={env} ids={home} apps={apps} active={active} />
-          {others.length ? (
+          <CinemaTiles env={env} ids={firstIds} apps={apps} active={active} />
+          {restIds.length ? (
             <section class={styles.section}>
               <h2 class={styles.heading}>{t("home.allApps")}</h2>
-              <CinemaTiles env={env} ids={others} apps={apps} active={active} />
+              <CinemaTiles env={env} ids={restIds} apps={apps} active={active} />
             </section>
           ) : null}
-          {ready && !apps.length ? <p class={styles.empty}>{t("home.emptyApps")}</p> : null}
         </main>
       </div>
       <SideRail env={env} />

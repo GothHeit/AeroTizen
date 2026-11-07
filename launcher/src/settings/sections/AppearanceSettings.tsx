@@ -40,24 +40,29 @@ export const AppearanceSettings = ({ settings, actions }: SettingsSectionProps) 
           onSelect={actions.setInterfaceStyle}
         />
       </SettingsSection>
-      <SettingsSection title={t("appearance.size")}>
-        <ChoiceGroup
-          id="home-card-columns"
-          label={t("appearance.size")}
-          value={String(settings.homeCardColumns)}
-          options={HOME_CARD_COLUMNS_OPTIONS}
-          onSelect={(value) => actions.setHomeCardColumns(Number(value))}
-        />
-      </SettingsSection>
-      <SettingsSection title={t("appearance.homeLayout")}>
-        <ChoiceGroup
-          id="home-app-layout"
-          label={t("appearance.homeLayout")}
-          value={settings.homeAppLayout}
-          options={HOME_APP_LAYOUT_OPTIONS}
-          onSelect={actions.setHomeAppLayout}
-        />
-      </SettingsSection>
+      {/* Cinema always shows rows of six wide tiles, so size and layout would do nothing there. */}
+      {settings.cinemaUi ? null : (
+        <>
+          <SettingsSection title={t("appearance.size")}>
+            <ChoiceGroup
+              id="home-card-columns"
+              label={t("appearance.size")}
+              value={String(settings.homeCardColumns)}
+              options={HOME_CARD_COLUMNS_OPTIONS}
+              onSelect={(value) => actions.setHomeCardColumns(Number(value))}
+            />
+          </SettingsSection>
+          <SettingsSection title={t("appearance.homeLayout")}>
+            <ChoiceGroup
+              id="home-app-layout"
+              label={t("appearance.homeLayout")}
+              value={settings.homeAppLayout}
+              options={HOME_APP_LAYOUT_OPTIONS}
+              onSelect={actions.setHomeAppLayout}
+            />
+          </SettingsSection>
+        </>
+      )}
     </>
   );
 };

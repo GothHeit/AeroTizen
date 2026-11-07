@@ -33,7 +33,12 @@ export const SoftBackdrop = ({ image, shown }: { image: string | null; shown: bo
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const target = canvas.current;
-    if (!target || !image) {
+    if (!target) {
+      return undefined;
+    }
+    if (!image) {
+      // No picture for this app: clear the last one rather than leave it behind the grid.
+      target.getContext("2d")?.clearRect(0, 0, WIDTH, HEIGHT);
       return undefined;
     }
     let current = true;
