@@ -47,6 +47,10 @@ body.tv {
 body.tv [data-home-content] {
   visibility: hidden;
 }
+/* Cinema's shelf, backdrop and clock would cover a full-screen input; only the side rail may show. */
+body.tv [data-cinema-home] > :not([data-side-rail]):not([data-side-rail-dim]) {
+  visibility: hidden;
+}
 body.previewing [data-home-content] {
   visibility: hidden;
 }
