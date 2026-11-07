@@ -229,6 +229,7 @@
         "apply",
         "backup",
         "export",
+        "hdmi",
         "home",
         "leave",
         "live_tv",

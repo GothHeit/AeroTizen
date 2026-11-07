@@ -227,6 +227,7 @@
   "handoff.homeFailed": "تعذر فتح واجهة Samsung الرئيسية: {{reason}}",
   "handoff.liveTvFailed": "تعذر فتح البث المباشر: {{reason}}",
   "handoff.liveTvNoFocus": "لم ينتقل التركيز إلى البث المباشر",
+  "handoff.inputNoFocus": "لم ينتقل التركيز إلى {{input}}",
   "handoff.launchDenied": "تم رفض التشغيل",
   "handoff.launchFailed": "فشل التشغيل",
   "handoff.appControlFailed": "فشل AppControl",

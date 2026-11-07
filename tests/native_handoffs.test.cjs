@@ -105,6 +105,9 @@ function harness(options = {}) {
     addEventListener(name, handler) {
       documentListeners[name] = handler;
     },
+    removeEventListener(name, handler) {
+      if (documentListeners[name] === handler) delete documentListeners[name];
+    },
     hidden: options.visible === true ? false : true,
     body: { classList: { add() {}, remove() {} } },
     documentElement: { style: {} },
@@ -312,13 +315,55 @@ test("HDMI always uses TVWindow and never touches native Home or watcher", () =>
   assert.equal(h.requests.length, 0);
 });
 
-test("native Live TV fallback rearms when launch accepted but never takes focus", () => {
+test("native Live TV fallback rearms when a key still reaches the launcher after launch", () => {
   const h = harness({ visible: true });
   h.A.inputs.show({ type: "TV", number: 1 });
   h.requests[0].resolve(200);
-  assert.equal(h.timers[0].ms, 2100);
-  h.timers[0].fn();
+  // A slow viewer is given time: nothing rearms until a key proves the launcher is still in front.
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.timers.at(-1).ms, 15000);
+  h.documentListeners.keydown();
   assert.equal(h.requests[1].url, "http://127.0.0.1:47790/home");
+  assert.deepEqual(h.toasts, ["Live TV did not take focus"]);
+});
+
+function cinemaHarness(options) {
+  const h = harness(options);
+  h.A.settings.update({ cinemaUi: true });
+  h.A.homeScreen = { closePanel() {}, peekInput() {} };
+  return h;
+}
+
+test("Cinema selects the HDMI port before handing it to Samsung's viewer", () => {
+  const h = cinemaHarness();
+  h.A.inputs.show({ type: "HDMI", number: 2, raw: { type: "HDMI", number: 2 } });
+  h.requests[0].resolve(200);
+  assert.deepEqual(h.inputs, [{ source: { type: "HDMI", number: 2 }, target: "MAIN" }]);
+  assert.deepEqual(
+    h.launches.map((l) => l.id),
+    ["org.tizen.tv-viewer"],
+  );
+  assert.equal(h.embedded.length, 0);
+  const request = h.log.snapshot().records.find((item) => item.event === "handoff.request");
+  assert.equal(request.data.action, "hdmi");
+});
+
+test("Cinema shows HDMI inside the launcher when Samsung's viewer fails", () => {
+  const h = cinemaHarness({ launchFails: true, appControlFails: true });
+  h.A.inputs.show({ type: "HDMI", number: 1, raw: { type: "HDMI", number: 1 } });
+  h.requests[0].resolve(200);
+  assert.deepEqual(h.embedded, ["shown"]);
+  assert.deepEqual(h.toasts, []);
+});
+
+test("Cinema names the HDMI input when the viewer never takes focus", () => {
+  const h = cinemaHarness({ visible: true });
+  h.A.inputs.show({ type: "HDMI", number: 1, name: "Xbox", raw: { type: "HDMI", number: 1 } });
+  h.requests[0].resolve(200);
+  h.documentListeners.keydown();
+  assert.equal(h.toasts.length, 1);
+  assert.match(h.toasts[0], /did not take focus/);
+  assert.doesNotMatch(h.toasts[0], /Live TV/);
 });
 
 test("on page reload native handoff re-arms HomeWatcher", () => {
@@ -364,7 +409,7 @@ test("Live TV acceptance remains separate from unconfirmed visibility", () => {
   const h = harness({ visible: true });
   h.A.homewatch.openNativeLiveTV();
   h.requests[0].resolve(200);
-  h.timers.find((timer) => timer.ms === 2100).fn();
+  h.documentListeners.keydown();
   assert.deepEqual(
     h.log.snapshot().records.map((item) => item.event),
     ["handoff.request", "handoff.accepted", "handoff.visibility_unconfirmed"],

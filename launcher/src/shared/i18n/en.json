@@ -227,6 +227,7 @@
   "handoff.homeFailed": "Could not open Samsung Home: {{reason}}",
   "handoff.liveTvFailed": "Could not open Live TV: {{reason}}",
   "handoff.liveTvNoFocus": "Live TV did not take focus",
+  "handoff.inputNoFocus": "{{input}} did not take focus",
   "handoff.launchDenied": "launch denied",
   "handoff.launchFailed": "launch failed",
   "handoff.appControlFailed": "AppControl failed",
