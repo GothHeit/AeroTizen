@@ -114,6 +114,9 @@ export interface HomeBridge {
   focus(): void;
   keydown(code: number, event: Pick<KeyboardEvent, "preventDefault">): void;
   keyup(code: number): void;
+  /** Opens the side rail over a full-screen input; false when the layout has no rail. */
+  openRail(): boolean;
+  railOpen(): boolean;
   refreshApps(): void;
   render(): void;
 }

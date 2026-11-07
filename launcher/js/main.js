@@ -28,21 +28,35 @@
       }
       return;
     }
+    // Settings can be opened from the side rail over a full-screen input.
+    if (A.settingsUi.isOpen()) {
+      return A.settingsUi.keydown(k, e);
+    }
     if (A.inputs.watching) {
+      if (railOpen()) {
+        return A.homeScreen.keydown(k, e);
+      }
       if (k === KEY.BACK || k === KEY.ESC || k === KEY.ENTER) {
         e.preventDefault();
         A.inputs.leave();
+      } else if (
+        (k === KEY.LEFT || k === KEY.RIGHT || k === KEY.UP || k === KEY.DOWN) &&
+        A.homeScreen.openRail &&
+        A.homeScreen.openRail()
+      ) {
+        e.preventDefault();
       }
       return;
-    }
-    if (A.settingsUi.isOpen()) {
-      return A.settingsUi.keydown(k, e);
     }
     A.homeScreen.keydown(k, e);
   });
 
+  function railOpen() {
+    return !!(A.homeScreen.railOpen && A.homeScreen.railOpen());
+  }
+
   document.addEventListener("keyup", function (e) {
-    if (A.settingsUi.isOpen() || A.inputs.watching || window.Fireplace.isOpen()) {
+    if (A.settingsUi.isOpen() || window.Fireplace.isOpen() || (A.inputs.watching && !railOpen())) {
       return;
     }
     A.homeScreen.keyup(e.keyCode);

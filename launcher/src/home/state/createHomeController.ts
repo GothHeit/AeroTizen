@@ -382,6 +382,8 @@ export const createHomeController = (
     } else {
       const source = inventory.getSnapshot().inputs.find((source) => sourceKey(source) === key);
       if (source) {
+        // The rail must not stay over the picture it just switched to.
+        update({ rail: null });
         runtime.inputs.show(source);
       }
     }
@@ -427,6 +429,19 @@ export const createHomeController = (
   const closeRail = (restore: string) => {
     update({ rail: null });
     select(restore);
+  };
+  // A full-screen input has no grid behind it, so the rail is its only menu.
+  const openRail = () => {
+    if (!cinema()) {
+      return false;
+    }
+    transaction(() => {
+      const current = state.getSnapshot();
+      const watched = inventory.getSnapshot().inputs.find((source) => source.active);
+      update({ rail: current.rail ?? current.selected });
+      select(watched ? sourceKey(watched) : "gear");
+    });
+    return true;
   };
   const navigateCinema = (code: number, current: HomeState, delta: number, rtl: boolean) => {
     const back = code === K.BACK || code === K.ESC;
@@ -584,6 +599,8 @@ export const createHomeController = (
     },
     keydown,
     keyup,
+    openRail,
+    railOpen: () => state.getSnapshot().rail !== null,
   };
   return { ...env, state, bridge, select, activate, showPage, choose, dismiss, menuChoices };
 };
