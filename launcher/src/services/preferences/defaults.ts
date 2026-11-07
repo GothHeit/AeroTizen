@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS: SettingsDefaults = {
   home: null, // null selects first-launch defaults; [] retains an empty Home.
   glassSettings: false,
   cinemaUi: false,
+  shelfWallpaper: "",
   homeCardColumns: 3,
   homeAppLayout: "grid",
   background: "aurora",

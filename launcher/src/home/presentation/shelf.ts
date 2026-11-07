@@ -1,4 +1,4 @@
-import { custom, fallback } from "virtual:shelf-images";
+import { custom, fallback, wallpapers } from "virtual:shelf-images";
 
 import type { ContinueItem, InstalledApp } from "../../contracts/launcher";
 
@@ -35,3 +35,14 @@ export const getContinueFeature = (item: ContinueItem): Omit<ShelfFeature, "kick
   detail: item.season || item.episode ? "S" + item.season + " · E" + item.episode : null,
   progress: item.duration > 0 ? Math.max(0, Math.min(1, item.playback / item.duration)) : null,
 });
+
+/** Wallpapers the user can pin to the shelf, with a small copy of each for Settings. */
+export const SHELF_WALLPAPERS = wallpapers.map((path) => ({
+  path,
+  thumb: path.replace(/\/([^/]+)$/, "/thumbs/$1"),
+  name: path.slice(path.lastIndexOf("/") + 1).replace(/\.[^.]+$/, ""),
+}));
+
+/** The pinned wallpaper, or null when none is set or the file no longer ships. */
+export const getPinnedWallpaper = (path: string, list: readonly string[] = wallpapers) =>
+  path && list.includes(path) ? path : null;

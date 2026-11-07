@@ -2,7 +2,7 @@ import type { InstalledApp } from "../../../contracts/launcher";
 import { useStore } from "../../../shared/hooks/useStore";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import type { ShelfFeature } from "../../presentation/shelf";
-import { getContinueFeature, getShelfImage } from "../../presentation/shelf";
+import { getContinueFeature, getPinnedWallpaper, getShelfImage } from "../../presentation/shelf";
 import type { HomeEnvironment } from "../../types";
 
 import styles from "./TopShelf.module.css";
@@ -37,7 +37,10 @@ export const TopShelf = ({
   const { t } = useTranslation();
   const settings = useStore(env.settings);
   useStore(env.inventory);
-  const feature = app ? selectFeature(env, app, t("home.continueWatching"), settings.continueWatching) : null;
+  const chosen = app ? selectFeature(env, app, t("home.continueWatching"), settings.continueWatching) : null;
+  // A pinned wallpaper stays put while the title and progress follow the focused app.
+  const pinned = getPinnedWallpaper(settings.shelfWallpaper);
+  const feature = chosen && pinned ? { ...chosen, image: pinned } : chosen;
   return (
     <div class={styles.shelf} data-top-shelf data-open={open ? "true" : "false"} aria-hidden="true">
       {feature?.image ? (

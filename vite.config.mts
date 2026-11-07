@@ -30,6 +30,7 @@ const widgetAssets = (output: string): Plugin => ({
 
 // Lists Top Shelf images at build time. Drop JPEG/PNG/WebP files into launcher/assets/shelf;
 // the weather scenes are used until any exist. Images ship as files, never inlined.
+// launcher/assets/wallpapers holds pictures the user can pin to the shelf, with small copies in thumbs/.
 const SHELF_MODULE = "virtual:shelf-images";
 const shelfImages: Plugin = {
   name: "aerotizen-shelf-images",
@@ -51,6 +52,9 @@ const shelfImages: Plugin = {
       ";\n" +
       "export const fallback = " +
       JSON.stringify(await list("weather")) +
+      ";\n" +
+      "export const wallpapers = " +
+      JSON.stringify(await list("wallpapers")) +
       ";\n"
     );
   },

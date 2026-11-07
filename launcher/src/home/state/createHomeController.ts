@@ -349,8 +349,18 @@ export const createHomeController = (
     focus();
   };
   const activate = (key: string) => {
+    // Any choice in the panel over an input's picture closes that picture first.
+    if (runtime.inputs.peeking) {
+      runtime.inputs.endPeek?.();
+    }
     if (key === "gear") {
       endMove();
+      // Settings replaces the side panel rather than sitting on top of it.
+      const rail = state.getSnapshot().rail;
+      if (rail !== null) {
+        update({ rail: null });
+        select(rail);
+      }
       runtime.settingsUi?.open();
     } else if (key === "samsung-home-shortcut") {
       if (runtime.homewatch.openSamsungHome) {
@@ -425,6 +435,9 @@ export const createHomeController = (
   };
   const K = runtime.config.KEY;
   const closeRail = (restore: string) => {
+    if (runtime.inputs.peeking) {
+      runtime.inputs.endPeek?.();
+    }
     update({ rail: null });
     select(restore);
   };
@@ -584,6 +597,11 @@ export const createHomeController = (
     },
     keydown,
     keyup,
+    peekInput(key: string) {
+      const top = cinemaRows()[0]?.[0] || "";
+      update({ active: true, menu: null, rail: state.getSnapshot().rail ?? top });
+      select(railKeys().includes(key) ? key : "gear");
+    },
   };
   return { ...env, state, bridge, select, activate, showPage, choose, dismiss, menuChoices };
 };

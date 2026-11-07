@@ -85,6 +85,7 @@ export interface SettingsActions {
   setLocationVisible(visible: boolean): void;
   setNetworkVisible(visible: boolean): void;
   setNumerals(numerals: "latn" | "arab"): void;
+  setShelfWallpaper(path: string): void;
   setSpeed(direction: number): void;
   setTempUnit(unit: TemperatureUnit): void;
   setTimeFormat(format: TimeFormat | "none"): void;

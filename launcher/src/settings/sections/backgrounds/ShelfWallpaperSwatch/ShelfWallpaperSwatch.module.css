@@ -1,0 +1,5 @@
+.picture {
+  background-color: var(--card);
+  background-size: cover;
+  background-position: center;
+}

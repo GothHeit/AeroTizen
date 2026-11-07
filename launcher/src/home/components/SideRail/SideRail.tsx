@@ -17,7 +17,7 @@ export const SideRail = ({ env }: { env: HomeEnvironment }) => {
   const open = rail !== null;
   return (
     <>
-      <div class={styles.dim} data-open={open ? "true" : "false"} />
+      <div class={styles.dim} data-side-rail-dim data-open={open ? "true" : "false"} />
       <nav class={styles.rail} data-side-rail data-open={open ? "true" : "false"} aria-hidden={!open}>
         <RailItem env={env} controlKey="gear" icon={Settings} title={t("common.settings")} open={open}>
           {unread ? <span class={styles.notice} data-home-update-notice aria-hidden="true" /> : null}

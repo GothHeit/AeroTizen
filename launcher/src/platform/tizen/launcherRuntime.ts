@@ -42,8 +42,11 @@ export interface LauncherRuntime {
   homeScreen?: HomeBridge;
   homewatch: { useSamsungHome(): void; openSamsungHome?(): void };
   inputs: {
+    /** True while the side panel sits over an input's picture after Home was pressed there. */
+    peeking?: boolean;
     sources: InputSource[];
     watching: boolean;
+    endPeek?(): void;
     alwaysVisible?(source: InputSource): boolean;
     hasRecognizedDevice?(source: InputSource): boolean;
     isVisible(source: InputSource): boolean;

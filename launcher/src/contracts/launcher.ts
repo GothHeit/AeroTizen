@@ -114,6 +114,8 @@ export interface HomeBridge {
   focus(): void;
   keydown(code: number, event: Pick<KeyboardEvent, "preventDefault">): void;
   keyup(code: number): void;
+  /** Cinema only: open the side panel over an input's live picture, on that input. */
+  peekInput?(key: string): void;
   refreshApps(): void;
   render(): void;
 }

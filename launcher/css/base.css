@@ -47,6 +47,17 @@ body.tv {
 body.tv [data-home-content] {
   visibility: hidden;
 }
+/* Cinema draws its shelf, clock and side panel outside the rows; hide all of it over HDMI. */
+body.tv [data-cinema-home] {
+  visibility: hidden;
+}
+/* After Home on an input, only the side panel shows, over that input's picture. */
+body.tv-peek {
+  background: transparent;
+}
+body.tv-peek [data-cinema-home] > :not([data-side-rail]):not([data-side-rail-dim]) {
+  visibility: hidden;
+}
 body.previewing [data-home-content] {
   visibility: hidden;
 }

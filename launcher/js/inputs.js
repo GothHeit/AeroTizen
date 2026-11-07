@@ -176,6 +176,19 @@
     ) {
       return;
     }
+    // Cinema hands HDMI to Samsung's own viewer, so the remote reaches the console
+    // (arrows and OK over HDMI-CEC). Home then brings back the side panel over it.
+    if (
+      s &&
+      s.type !== "TV" &&
+      A.settings.getSnapshot().cinemaUi === true &&
+      A.homewatch &&
+      typeof A.homewatch.openNativeLiveTV === "function" &&
+      A.homewatch.openNativeLiveTV(s.raw || s) !== false
+    ) {
+      handedOff = s;
+      return;
+    }
     if (!tz || !tz.tvwindow) {
       return A.toast(A.translate("inputs.wouldSwitch", { input: displayLabel(s) }));
     }
@@ -207,6 +220,73 @@
     }
   };
 
+  // The input Cinema handed to Samsung's viewer, until AeroTizen is back in front.
+  var handedOff = null,
+    peekStarted = 0;
+  var PEEK_SETTLE_MS = 1500;
+  function sourceKey(s) {
+    return "input:" + s.type + ":" + s.number;
+  }
+
+  // Show the input's live picture behind the side panel. Nothing changes the source.
+  function peek() {
+    var s = handedOff;
+    handedOff = null;
+    if (!s || inputs.peeking || !tz || !tz.tvwindow || !A.homeScreen || !A.homeScreen.peekInput) {
+      return;
+    }
+    peekStarted = Date.now();
+    inputs.peeking = true;
+    document.body.classList.add("tv-peek");
+    document.documentElement.style.background = "transparent";
+    window.Backgrounds.suspend();
+    A.homeScreen.peekInput(sourceKey(s));
+    try {
+      tz.tvwindow.show(
+        function () {},
+        function () {
+          inputs.endPeek();
+        },
+        ["0px", "0px", "1920px", "1080px"],
+        "MAIN"
+      );
+    } catch (e) {
+      inputs.endPeek();
+    }
+  }
+
+  inputs.peeking = false;
+  inputs.endPeek = function () {
+    if (!inputs.peeking) {
+      return;
+    }
+    inputs.peeking = false;
+    document.body.classList.remove("tv-peek");
+    A.applyBackground();
+    try {
+      tz.tvwindow.hide(
+        function () {},
+        function () {},
+        "MAIN"
+      );
+    } catch (e) {
+      /* already hidden */
+    }
+  };
+
+  // Home returns here (event, visibility, or both). The first return opens the panel over
+  // the picture; Home again a moment later goes straight to AeroTizen's own Home.
+  function returned() {
+    if (handedOff) {
+      peek();
+    } else if (inputs.peeking && Date.now() - peekStarted > PEEK_SETTLE_MS) {
+      inputs.endPeek();
+      if (A.homeScreen && A.homeScreen.keydown) {
+        A.homeScreen.keydown(A.config.KEY.BACK, { preventDefault: function () {} });
+      }
+    }
+  }
+
   inputs.leave = function () {
     inputs.watching = false;
     document.body.classList.remove("tv");
@@ -225,6 +305,9 @@
   // Native Home can target this already-running app while its embedded HDMI
   // window is visible. Closing that window is separate from foregrounding us.
   window.addEventListener("appcontrol", function () {
+    if (!inputs.watching) {
+      returned();
+    }
     if (!inputs.watching || !tz || !tz.application) {
       return;
     }
@@ -248,6 +331,9 @@
     if (document.hidden) {
       inputWasHidden = inputs.watching;
       return;
+    }
+    if (handedOff) {
+      returned();
     }
     if (inputWasHidden && inputs.watching) {
       inputs.leave();

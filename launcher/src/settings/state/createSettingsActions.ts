@@ -85,6 +85,7 @@ export const createSettingsActions = (
         view.set({ ...view.getSnapshot(), colourPicker: null });
       });
     },
+    setShelfWallpaper: (shelfWallpaper) => commit({ shelfWallpaper }),
     setInterfaceStyle: (style) => commit({ glassSettings: style === "glass", cinemaUi: style === "cinema" }),
     setWeatherPhoto: (weatherPhoto) =>
       commit({ weatherPhoto }, () => {

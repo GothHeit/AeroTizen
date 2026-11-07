@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef } from "preact/hooks";
 import { useStore } from "../../../shared/hooks/useStore";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import { HeaderStatus } from "../../../status/HeaderStatus/HeaderStatus";
-import { getShelfImage } from "../../presentation/shelf";
+import { getPinnedWallpaper, getShelfImage } from "../../presentation/shelf";
 import type { HomeEnvironment } from "../../types";
 import { AppActionsMenu } from "../AppActionsMenu/AppActionsMenu";
 import { CinemaTiles } from "../CinemaTiles/CinemaTiles";
@@ -32,7 +32,8 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   const topRow = home.slice(0, TOP_ROW).map((id) => "app:" + id);
   const shelfKey = topRow.includes(rail ?? selected) ? (rail ?? selected) : topRow[0];
   const shelfApp = shelfKey ? apps.find((app) => "app:" + app.id === shelfKey) || null : null;
-  const backdrop = shelfApp ? getShelfImage(shelfApp) : null;
+  const pinned = getPinnedWallpaper(settings.shelfWallpaper);
+  const backdrop = pinned || (shelfApp ? getShelfImage(shelfApp) : null);
   const previous = useRef(scroll);
   const crossesShelf = (previous.current === 0) !== (scroll === 0);
   previous.current = scroll;
