@@ -32,6 +32,8 @@ AeroTizen.config = {
   HIDDEN_APPS: /service|emanual|companion|dummy|widget|DclHome001/i,
   // com.samsung.tv.store first: on a Tizen 9 CU7000, org.volt.apps launches to a blank screen.
   STORE_APP_IDS: ["com.samsung.tv.store", "org.volt.apps"],
+  // Samsung's Smart Hub search, opened from the Cinema dock.
+  SEARCH_APP_ID: "com.samsung.tv.searchall",
   HBBTV_APP_ID: "org.tizen.hbbtv",
   HBBTV_LINK_METADATA: "http://samsung.com/tv/metadata/hbbtv.link",
 

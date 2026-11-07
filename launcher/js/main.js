@@ -5,11 +5,31 @@
 
   var KEY = A.config.KEY;
 
+  // OK held down settles the focused tile until release, so a press feels physical.
+  // Only a body class changes; the tile's own transform does the rest on the GPU.
+  function okHeld(down) {
+    if (document.body.classList.contains("ok-down") !== down) {
+      document.body.classList.toggle("ok-down", down);
+    }
+  }
+
   document.addEventListener("keydown", function (e) {
     var k = e.keyCode,
       active = document.activeElement;
+    okHeld(k === KEY.ENTER);
     // Text entry: the on-screen keyboard owns the keys; OK/Done/Back finish.
     if (active && active.tagName === "INPUT") {
+      // Cinema's "Find an app" field: Done or Down keeps the filter, Back clears it.
+      if (active.id === "app-find" && A.homeScreen.finishFind) {
+        if (k === KEY.ENTER || k === KEY.IME_DONE || k === KEY.DOWN) {
+          e.preventDefault();
+          A.homeScreen.finishFind(false);
+        } else if (k === KEY.BACK || k === KEY.ESC || k === KEY.IME_CANCEL) {
+          e.preventDefault();
+          A.homeScreen.finishFind(true);
+        }
+        return;
+      }
       if (k === KEY.ENTER || k === KEY.BACK || k === KEY.ESC || k === KEY.IME_DONE || k === KEY.IME_CANCEL) {
         e.preventDefault();
         active.blur();
@@ -50,6 +70,7 @@
   });
 
   document.addEventListener("keyup", function (e) {
+    okHeld(false);
     if (A.settingsUi.isOpen() || (A.inputs.watching && !A.inputs.peeking) || window.Fireplace.isOpen()) {
       return;
     }

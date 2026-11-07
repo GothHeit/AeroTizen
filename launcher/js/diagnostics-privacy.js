@@ -39,6 +39,8 @@
       "watcher.capability",
       "watcher.checking",
       "watcher.launch",
+      "watcher.native-follow",
+      "watcher.native-follow-stop",
       "watcher.unseen",
       "watcher.unwatched"
     ],
@@ -229,6 +231,7 @@
         "apply",
         "backup",
         "export",
+        "hdmi",
         "home",
         "leave",
         "live_tv",

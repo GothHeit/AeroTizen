@@ -240,6 +240,11 @@ body.cinema-ui {
   --back-to-top-border: rgba(255, 255, 255, 0.5);
 }
 
+/* OK held: the focused tile settles back a little until release (from kshitizwagle's fork). */
+body.cinema-ui.ok-down {
+  --home-card-focus-scale: 1.04;
+}
+
 /* Solid colours keep their full range. Floating Home text follows luminance. */
 :root[data-light-background="true"] body {
   --clock-text: #15151b;

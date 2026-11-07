@@ -133,7 +133,11 @@
 
   // Unlike tvwindow's embedded TV picture, the native viewer owns
   // channel selection and remote-control interactions.
-  function openNativeLiveTV(videoSource) {
+  var viewerRequest = 0;
+  // `hdmi` ({ label, fallback }) hands an HDMI port to the same viewer: the port is
+  // selected first, and any failure falls back to the embedded picture instead of
+  // an error, so the input still shows. Adapted from metacurb's HDMI viewer branch.
+  function openNativeViewer(videoSource, hdmi) {
     if (livePending) {
       return true;
     }
@@ -141,7 +145,13 @@
       // Older devices keep the upstream embedded TVWindow behaviour.
       return false;
     }
-    var operation = report("request", "live_tv");
+    if (hdmi && !(videoSource && tz.tvwindow && typeof tz.tvwindow.setSource === "function")) {
+      // Without source selection the viewer would show whatever was last on screen.
+      return false;
+    }
+    var action = hdmi ? "hdmi" : "live_tv";
+    var operation = report("request", action);
+    var request = ++viewerRequest;
     livePending = true;
     var finished = false;
     function failed(reason, detail) {
@@ -150,8 +160,12 @@
       }
       finished = true;
       livePending = false;
-      report("failed", "live_tv", operation, reason);
+      report("failed", action, operation, reason);
       rearmWatcher();
+      if (hdmi) {
+        hdmi.fallback();
+        return;
+      }
       A.toast(A.translate("handoff.liveTvFailed", { reason: detail || reason }));
     }
     function accepted() {
@@ -160,7 +174,7 @@
       }
       finished = true;
       livePending = false;
-      report("accepted", "live_tv", operation);
+      report("accepted", action, operation);
       // A Tizen launch success callback only confirms that launch was
       // accepted. It does not guarantee the native viewer took focus.
       // Rearming the Home watcher here pulled the launcher back over a viewer
@@ -179,12 +193,15 @@
       }
       function stillHere() {
         stopWaiting();
-        if (document.hidden || Date.now() - acceptedAt > NO_FOCUS_WINDOW_MS) {
+        // A newer request owns the screen now; this one has nothing left to report.
+        if (request !== viewerRequest || document.hidden || Date.now() - acceptedAt > NO_FOCUS_WINDOW_MS) {
           return;
         }
-        report("visibility_unconfirmed", "live_tv", operation);
+        report("visibility_unconfirmed", action, operation);
         rearmWatcher();
-        A.toast(A.translate("handoff.liveTvNoFocus"));
+        A.toast(
+          hdmi ? A.translate("handoff.inputNoFocus", { input: hdmi.label }) : A.translate("handoff.liveTvNoFocus")
+        );
       }
       document.addEventListener("keydown", stillHere, true);
       document.addEventListener("visibilitychange", covered);
@@ -220,8 +237,8 @@
         appControlFallback();
       }
     }
-    function selectTuner() {
-      // A previous HDMI selection must not carry over into native Live TV.
+    function selectSource() {
+      // Select the requested tuner or HDMI port, so an earlier one never carries over.
       if (!videoSource || !tz.tvwindow || !tz.tvwindow.setSource) {
         launchViewer();
         return;
@@ -243,7 +260,7 @@
         failed("TV tuner selection is unavailable", A.translate("handoff.tunerUnavailable"));
       }
     }
-    leaveBeforeLaunch(selectTuner, failed);
+    leaveBeforeLaunch(selectSource, failed);
     return true;
   }
 
@@ -252,7 +269,10 @@
   A.homewatch.resume = rearmWatcher;
   A.homewatch.suspendForExternal = leaveBeforeLaunch;
   A.homewatch.openSamsungHome = openSamsungHome;
-  A.homewatch.openNativeLiveTV = openNativeLiveTV;
+  A.homewatch.openNativeViewer = openNativeViewer;
+  A.homewatch.openNativeLiveTV = function (videoSource) {
+    return openNativeViewer(videoSource, null);
+  };
 
   // Ported from the working launcher: returning from a Samsung system app
   // can reload the page without a visibilitychange event. The existing

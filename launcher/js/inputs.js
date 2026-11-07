@@ -181,6 +181,11 @@
     if (s && cinema() && handOff(s)) {
       return;
     }
+    showEmbedded(s);
+  };
+
+  // The input's picture inside the launcher, through tizen.tvwindow.
+  function showEmbedded(s) {
     if (!tz || !tz.tvwindow) {
       return A.toast(A.translate("inputs.wouldSwitch", { input: displayLabel(s) }));
     }
@@ -211,7 +216,7 @@
     } catch (e) {
       A.toast(A.translate("inputs.switchFailed"));
     }
-  };
+  }
 
   var FULL_SCREEN = ["0px", "0px", "1920px", "1080px"];
   // The input on screen: embedded here while `watching`, or handed to Samsung's viewer.
@@ -239,10 +244,19 @@
   }
 
   function handOff(s) {
-    if (!A.homewatch || typeof A.homewatch.openNativeLiveTV !== "function") {
+    if (!A.homewatch || typeof A.homewatch.openNativeViewer !== "function") {
       return false;
     }
-    if (A.homewatch.openNativeLiveTV(s.raw || s) === false) {
+    var hdmi = {
+      label: displayLabel(s),
+      // The viewer refused or failed: show the input inside the launcher instead.
+      fallback: function () {
+        current = null;
+        handedOff = null;
+        showEmbedded(s);
+      },
+    };
+    if (A.homewatch.openNativeViewer(s.raw || s, hdmi) === false) {
       return false;
     }
     current = s;

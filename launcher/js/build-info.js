@@ -1,2 +1,2 @@
 /* global module */
-(function(root){var value={"version":"2.6.0","build_id":"19a886b95e21a9755535feb00c0a821d55bd443a738489b858e6e4fff8cb7da5","commit":"9f5002b7a6d6a23a63a9cd1c0ca203d587f52d13","dirty":true};if(typeof module!=="undefined"&&module.exports){module.exports=value;}else{root.AeroBuildInfo=value;}})(typeof window!=="undefined"?window:this);
+(function(root){var value={"version":"2.7.0","build_id":"81bf7887cc096973c6d43e0af54b04d1e76b25f2c4d918091f423d50a7fc9b77","commit":"4dc7a933ebe25f34d5aeb3f32caf26ac9b823182","dirty":false};if(typeof module!=="undefined"&&module.exports){module.exports=value;}else{root.AeroBuildInfo=value;}})(typeof window!=="undefined"?window:this);
