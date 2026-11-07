@@ -22,12 +22,13 @@
   overflow: hidden;
 }
 
-/* The first row sits at the bottom of the Top Shelf. */
+/* The first row sits at the bottom of the Top Shelf. The offset is set on this element's own
+   transform (not an inherited variable), so a move never restyles every tile. */
 .rows {
   padding: 836px 96px 96px;
   will-change: transform;
-  transform: translate3d(0, var(--home-offset), 0);
-  transition: transform var(--motion-duration-viewport) cubic-bezier(0.2, 0.72, 0.25, 1);
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .section {

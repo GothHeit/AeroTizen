@@ -6,10 +6,12 @@
   height: 840px;
   overflow: hidden;
   pointer-events: none;
-  transition: opacity var(--motion-duration-viewport) ease-out;
+  transition: opacity var(--motion-duration-viewport) cubic-bezier(0.23, 1, 0.32, 1);
 
+  /* Leaving is quicker than arriving, so the shelf is gone before the grid finishes rising. */
   &[data-open="false"] {
     opacity: 0;
+    transition-duration: var(--motion-duration-menu);
   }
 }
 

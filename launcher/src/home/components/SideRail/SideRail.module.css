@@ -28,7 +28,7 @@
   padding: 110px 48px 64px 56px;
   background: linear-gradient(90deg, rgba(18, 18, 20, 0.98) 0%, rgba(18, 18, 20, 0.94) 72%, transparent 100%);
   transform: translate3d(-480px, 0, 0);
-  transition: transform var(--motion-duration-enter) cubic-bezier(0.2, 0.72, 0.25, 1);
+  transition: transform var(--motion-duration-enter) cubic-bezier(0.32, 0.72, 0, 1);
 
   &[data-open="true"] {
     transform: translate3d(0, 0, 0);

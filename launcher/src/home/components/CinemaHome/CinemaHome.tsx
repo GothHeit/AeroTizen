@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "preact/hooks";
+import { useLayoutEffect, useRef } from "preact/hooks";
 
 import { useStore } from "../../../shared/hooks/useStore";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
@@ -14,6 +14,9 @@ import { TopShelf } from "../TopShelf/TopShelf";
 import styles from "./CinemaHome.module.css";
 
 const TOP_ROW = 6;
+// Two hand-tuned moves: the long drop between the Top Shelf and the grid, and a row-to-row step.
+const SHELF_MOVE = "var(--motion-duration-viewport)";
+const ROW_MOVE = "var(--motion-duration-scroll)";
 
 /** Apple TV-style Home: a Top Shelf over one row of favourites, then every other app. */
 export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
@@ -30,6 +33,9 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   const shelfKey = topRow.includes(rail ?? selected) ? (rail ?? selected) : topRow[0];
   const shelfApp = shelfKey ? apps.find((app) => "app:" + app.id === shelfKey) || null : null;
   const backdrop = shelfApp ? getShelfImage(shelfApp) : null;
+  const previous = useRef(scroll);
+  const crossesShelf = (previous.current === 0) !== (scroll === 0);
+  previous.current = scroll;
   useLayoutEffect(() => {
     env.bridge.focus();
   }, [env, apps, inputs, items, ready, settings.home, settings.homeInitialized, draft]);
@@ -46,7 +52,10 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
           class={styles.rows}
           data-home-content
           ref={env.rows}
-          style={{ "--home-offset": -scroll + "px" }}
+          style={{
+            transform: "translate3d(0, " + -scroll + "px, 0)",
+            transitionDuration: crossesShelf ? SHELF_MOVE : ROW_MOVE,
+          }}
         >
           <CinemaTiles env={env} ids={home} apps={apps} active={active} />
           {others.length ? (
