@@ -1,0 +1,74 @@
+/* The hidden attribute must win over component display rules, including SVG status hosts. */
+[hidden] {
+  display: none !important;
+}
+
+/* Page reset and shell visibility. */
+
+/* The background mount is part of the fixed TV canvas. Preact owns its contents. */
+[data-background-host] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body.tv [data-weather-photo] {
+  display: none;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  color: var(--fg);
+  font-family: "Roboto", "SamsungOne", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+h2 {
+  font-size: 39px;
+  font-weight: 500;
+  margin: 0 0 18px;
+}
+
+body.tv {
+  background: transparent;
+}
+body.tv [data-home-content] {
+  visibility: hidden;
+}
+body.previewing [data-home-content] {
+  visibility: hidden;
+}
+body.editing [data-home-content] {
+  visibility: hidden;
+}
+/* Public shell hook: Settings keeps the header dimmed over native TV mode. */
+body.tv [data-home-header],
+body.previewing [data-home-header] {
+  visibility: hidden;
+}
+body.editing:not(.previewing) [data-home-header],
+body.editing:not(.previewing) [data-home-content] {
+  visibility: visible;
+  opacity: 0.48;
+  pointer-events: none;
+}
+body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  color: var(--fg);
+  font-family: "Roboto", "SamsungOne", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
