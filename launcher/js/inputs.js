@@ -176,17 +176,9 @@
     ) {
       return;
     }
-    // Cinema hands HDMI to Samsung's own viewer, so the remote reaches the console
-    // (arrows and OK over HDMI-CEC). Home then brings back the side panel over it.
-    if (
-      s &&
-      s.type !== "TV" &&
-      A.settings.getSnapshot().cinemaUi === true &&
-      A.homewatch &&
-      typeof A.homewatch.openNativeLiveTV === "function" &&
-      A.homewatch.openNativeLiveTV(s.raw || s) !== false
-    ) {
-      handedOff = s;
+    // Cinema hands HDMI to Samsung's own viewer too, so the remote reaches the
+    // console over HDMI-CEC. Home there brings the side panel over the game.
+    if (s && cinema() && handOff(s)) {
       return;
     }
     if (!tz || !tz.tvwindow) {
@@ -198,6 +190,7 @@
         function () {
           tz.tvwindow.show(
             function () {
+              current = s;
               inputs.watching = true;
               document.body.classList.add("tv");
               document.documentElement.style.background = "transparent";
@@ -206,7 +199,7 @@
             function () {
               A.toast(A.translate("inputs.couldNotShow", { input: displayLabel(s) }));
             },
-            ["0px", "0px", "1920px", "1080px"],
+            FULL_SCREEN,
             "MAIN"
           );
         },
@@ -220,50 +213,39 @@
     }
   };
 
-  // The input Cinema handed to Samsung's viewer, until AeroTizen is back in front.
-  var handedOff = null,
+  var FULL_SCREEN = ["0px", "0px", "1920px", "1080px"];
+  // The input on screen: embedded here while `watching`, or handed to Samsung's viewer.
+  var current = null,
+    handedOff = null,
+    overViewer = false,
     peekStarted = 0;
-  var PEEK_SETTLE_MS = 1500;
+  // One Home press can arrive as an appcontrol event and a visibility change.
+  var HOME_SETTLE_MS = 1000;
+  // If showing the picture behind the panel pulls Samsung's viewer back to the front,
+  // remember that and show the panel over black instead from then on.
+  var PICTURE_KEY = "aerotizen.panelPicture";
+  var STEAL_WINDOW_MS = 2500;
+
+  function cinema() {
+    return A.settings.getSnapshot().cinemaUi === true;
+  }
   function sourceKey(s) {
     return "input:" + s.type + ":" + s.number;
   }
-
-  // Back from Samsung's viewer, open the side panel on that input. The live picture is not
-  // shown behind it: showing the TV window here made the TV hand the screen straight back to
-  // the viewer. Nothing changes the source.
-  function peek() {
-    var s = handedOff;
-    handedOff = null;
-    if (!s || inputs.peeking || !A.homeScreen || !A.homeScreen.peekInput) {
-      return;
-    }
-    peekStarted = Date.now();
-    inputs.peeking = true;
-    A.homeScreen.peekInput(sourceKey(s));
-  }
-
-  inputs.peeking = false;
-  inputs.endPeek = function () {
-    inputs.peeking = false;
-  };
-
-  // Home returns here (event, visibility, or both). The first return opens the side panel;
-  // Home again a moment later goes straight to AeroTizen's own Home.
-  function returned() {
-    if (handedOff) {
-      peek();
-    } else if (inputs.peeking && Date.now() - peekStarted > PEEK_SETTLE_MS) {
-      inputs.endPeek();
-      if (A.homeScreen && A.homeScreen.keydown) {
-        A.homeScreen.keydown(A.config.KEY.BACK, { preventDefault: function () {} });
-      }
+  function note(name, data) {
+    var log = window.AeroDiagnostics;
+    if (log && log.record) {
+      log.record("inputs." + name, data || {});
     }
   }
-
-  inputs.leave = function () {
-    inputs.watching = false;
-    document.body.classList.remove("tv");
-    A.applyBackground();
+  function pictureAllowed() {
+    try {
+      return window.localStorage.getItem(PICTURE_KEY) !== "off";
+    } catch (e) {
+      return true;
+    }
+  }
+  function hideWindow() {
     try {
       tz.tvwindow.hide(
         function () {},
@@ -273,28 +255,148 @@
     } catch (e) {
       /* already hidden */
     }
+  }
+
+  function handOff(s) {
+    if (!A.homewatch || typeof A.homewatch.openNativeLiveTV !== "function") {
+      return false;
+    }
+    if (A.homewatch.openNativeLiveTV(s.raw || s) === false) {
+      return false;
+    }
+    current = s;
+    handedOff = s;
+    return true;
+  }
+
+  inputs.peeking = false;
+
+  // Embedded picture (non-Cinema fallback): Left or Home opens the panel over it.
+  inputs.openPanel = function () {
+    if (!inputs.watching || inputs.peeking || !current || !A.homeScreen || !A.homeScreen.peekInput) {
+      return;
+    }
+    inputs.peeking = true;
+    peekStarted = Date.now();
+    document.body.classList.add("tv-panel");
+    A.homeScreen.peekInput(sourceKey(current));
   };
 
-  // Native Home can target this already-running app while its embedded HDMI
-  // window is visible. Closing that window is separate from foregrounding us.
-  window.addEventListener("appcontrol", function () {
-    if (!inputs.watching) {
-      returned();
+  // Back from Samsung's viewer: the panel opens over the game's live picture.
+  function panelOverViewer(s) {
+    if (!A.homeScreen || !A.homeScreen.peekInput) {
+      return;
     }
-    if (!inputs.watching || !tz || !tz.application) {
+    handedOff = null;
+    current = s;
+    overViewer = true;
+    inputs.peeking = true;
+    peekStarted = Date.now();
+    document.body.classList.add("tv", "tv-panel");
+    document.documentElement.style.background = "#000";
+    if (window.Backgrounds) {
+      window.Backgrounds.suspend();
+    }
+    A.homeScreen.peekInput(sourceKey(s));
+    if (!pictureAllowed() || !tz || !tz.tvwindow) {
+      note("panel_without_picture");
       return;
     }
     try {
+      tz.tvwindow.show(
+        function () {
+          if (!overViewer) {
+            return hideWindow();
+          }
+          document.documentElement.style.background = "transparent";
+          note("panel_picture_shown");
+        },
+        function () {
+          note("panel_picture_failed");
+        },
+        FULL_SCREEN,
+        "MAIN"
+      );
+    } catch (e) {
+      note("panel_picture_failed");
+    }
+  }
+
+  inputs.endPeek = function () {
+    inputs.peeking = false;
+    document.body.classList.remove("tv-panel");
+    if (overViewer) {
+      overViewer = false;
+      document.body.classList.remove("tv");
+      document.documentElement.style.background = "";
+      hideWindow();
+      A.applyBackground();
+    }
+  };
+
+  // Closing the panel over the game gives the screen and the remote back to the console.
+  inputs.backToInput = function () {
+    var s = current;
+    var wasOverViewer = overViewer;
+    inputs.endPeek();
+    if (wasOverViewer && s && !handOff(s)) {
+      inputs.leave();
+    }
+  };
+
+  inputs.leave = function () {
+    inputs.endPeek();
+    current = null;
+    handedOff = null;
+    inputs.watching = false;
+    document.body.classList.remove("tv");
+    A.applyBackground();
+    hideWindow();
+  };
+
+  var homeAt = 0;
+  function homePressed() {
+    var now = Date.now();
+    if (now - homeAt < HOME_SETTLE_MS) {
+      return;
+    }
+    homeAt = now;
+    if (handedOff && !inputs.peeking) {
+      panelOverViewer(handedOff);
+    } else if (inputs.peeking) {
+      // Home again: AeroTizen's own Home.
+      inputs.leave();
+      if (A.homeScreen && A.homeScreen.closePanel) {
+        A.homeScreen.closePanel();
+      }
+    } else if (inputs.watching && cinema()) {
+      inputs.openPanel();
+    } else if (inputs.watching) {
+      inputs.leave();
+    }
+  }
+
+  function isMainLaunch() {
+    try {
       var request = tz.application.getCurrentApplication().getRequestedAppControl();
-      if (
+      return !!(
         request &&
         request.appControl &&
         request.appControl.operation === "http://tizen.org/appcontrol/operation/main"
-      ) {
-        inputs.leave();
-      }
+      );
     } catch (e) {
-      /* Other launch requests must not interrupt HDMI playback. */
+      return false;
+    }
+  }
+
+  // Native Home targets this already-running app: from the embedded picture, or from
+  // Samsung's viewer after a Cinema handoff.
+  window.addEventListener("appcontrol", function () {
+    if (!(inputs.watching || handedOff || inputs.peeking) || !tz || !tz.application) {
+      return;
+    }
+    if (isMainLaunch()) {
+      homePressed();
     }
   });
 
@@ -302,14 +404,23 @@
   var inputWasHidden = false;
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) {
-      inputWasHidden = inputs.watching;
+      if (overViewer && Date.now() - peekStarted < STEAL_WINDOW_MS) {
+        // The TV put its viewer back in front as soon as the picture was shown here.
+        note("panel_picture_stolen");
+        try {
+          window.localStorage.setItem(PICTURE_KEY, "off");
+        } catch (e) {
+          /* storage unavailable */
+        }
+        var s = current;
+        inputs.endPeek();
+        handedOff = s;
+      }
+      inputWasHidden = inputs.watching || !!handedOff;
       return;
     }
-    if (handedOff) {
-      returned();
-    }
-    if (inputWasHidden && inputs.watching) {
-      inputs.leave();
+    if (inputWasHidden && (inputs.watching || handedOff)) {
+      homePressed();
     }
     inputWasHidden = false;
   });

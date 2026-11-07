@@ -51,7 +51,20 @@ body.tv [data-home-content] {
 body.tv [data-cinema-home] {
   visibility: hidden;
 }
+/* Home over an input: the side panel shows on top of the live picture. */
+body.tv.tv-panel [data-cinema-home] [data-side-rail],
+body.tv.tv-panel [data-cinema-home] [data-side-rail-dim] {
+  visibility: visible;
+}
 body.previewing [data-home-content] {
+  visibility: hidden;
+}
+/* Cinema paints its own black base over the whole screen, so an animated background behind
+   it would run unseen; stop it unless Settings is previewing one. */
+body.cinema-ui:not(.previewing) [data-background-host] {
+  display: none;
+}
+body.previewing [data-cinema-home] {
   visibility: hidden;
 }
 body.editing [data-home-content] {

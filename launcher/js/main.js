@@ -28,7 +28,15 @@
       }
       return;
     }
+    // The side panel over an input (embedded, or Samsung's viewer behind it) owns the keys.
+    if (A.inputs.peeking) {
+      return A.homeScreen.keydown(k, e);
+    }
     if (A.inputs.watching) {
+      if (k === KEY.LEFT && A.settings.getSnapshot().cinemaUi === true) {
+        e.preventDefault();
+        return A.inputs.openPanel();
+      }
       if (k === KEY.BACK || k === KEY.ESC || k === KEY.ENTER) {
         e.preventDefault();
         A.inputs.leave();
@@ -42,7 +50,7 @@
   });
 
   document.addEventListener("keyup", function (e) {
-    if (A.settingsUi.isOpen() || A.inputs.watching || window.Fireplace.isOpen()) {
+    if (A.settingsUi.isOpen() || (A.inputs.watching && !A.inputs.peeking) || window.Fireplace.isOpen()) {
       return;
     }
     A.homeScreen.keyup(e.keyCode);
