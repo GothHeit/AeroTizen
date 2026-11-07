@@ -191,6 +191,8 @@
               window.Backgrounds.suspend();
             },
             function () {
+              // setSource already switched the panel; restore Home instead of a dead black screen.
+              inputs.leave();
               A.toast(A.translate("inputs.couldNotShow", { input: displayLabel(s) }));
             },
             ["0px", "0px", "1920px", "1080px"],
