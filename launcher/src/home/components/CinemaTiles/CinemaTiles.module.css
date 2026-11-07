@@ -1,0 +1,10 @@
+.grid {
+  /* Artwork and logos scale from the tile height; the tile is wider than tall. */
+  --app-card-size: 152px;
+  --app-card-width: 254px;
+  --home-card-radius: 20px;
+
+  display: grid;
+  grid-template-columns: repeat(6, 254px);
+  gap: 56px 40px;
+}

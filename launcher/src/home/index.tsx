@@ -8,7 +8,7 @@ import type { LauncherRuntime } from "../platform/tizen/launcherRuntime";
 import type { Translations } from "../shared/i18n/createTranslations";
 import { TranslationContext } from "../shared/i18n/useTranslation";
 
-import { Home } from "./components/Home/Home";
+import { HomeRoot } from "./components/HomeRoot";
 import { createHomeController } from "./state/createHomeController";
 import { createHomeInventory } from "./state/createHomeInventory";
 
@@ -46,7 +46,7 @@ export const mountHome = (
       nodes: new Map(),
       showMoveInstructions: () => runtime.toast(translations.getSnapshot().t("home.moveInstructions")),
       describe: (app) => runtime.tiles.describe(app),
-      columns: (values) => values.homeCardColumns,
+      columns: (values) => (values.cinemaUi ? 6 : values.homeCardColumns),
     },
     flushSync,
   );
@@ -65,7 +65,7 @@ export const mountHome = (
   try {
     render(
       <TranslationContext.Provider value={translations}>
-        <Home env={environment} />
+        <HomeRoot env={environment} />
       </TranslationContext.Provider>,
       mount,
     );

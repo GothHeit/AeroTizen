@@ -1,7 +1,7 @@
 .card {
   position: relative;
   flex: 0 0 auto;
-  width: var(--app-card-size);
+  width: var(--app-card-width, var(--app-card-size));
   height: var(--app-card-size);
   border-radius: var(--home-card-radius);
   overflow: hidden;

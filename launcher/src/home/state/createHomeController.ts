@@ -9,6 +9,9 @@ const HEADER_KEYS = ["gear", "samsung-home-shortcut", "home-tab", "apps-tab"] as
 const TOP_SCROLL_CLEARANCE = 128;
 const BOTTOM_SCROLL_CLEARANCE = 96;
 const APPS_END_CLEARANCE = 16;
+// Cinema keeps a scrolled grid row this far below the top edge, clear of the clock.
+const CINEMA_TOP_CLEARANCE = 150;
+
 const HOME_MENU_CHOICES = [
   { action: "move", label: "home.move" },
   { action: "remove", label: "home.removeFromHome" },
@@ -132,6 +135,7 @@ export const createHomeController = (
     moving: null,
     draft: null,
     menu: null,
+    rail: null,
   });
   let timer: number | undefined;
   let enterDown = false;
@@ -159,8 +163,21 @@ export const createHomeController = (
       (id) => id === runtime.config.FIREPLACE_ID || !inventory.getSnapshot().ready || runtime.apps.byId(id),
     );
   };
+  const cinema = () => settings.getSnapshot().cinemaUi;
+  // Cinema shows favourites first, then every other installed app, on one page.
+  const cinemaIds = () => {
+    const home = homeIds();
+    return [
+      ...home,
+      ...inventory
+        .getSnapshot()
+        .apps.map((app) => app.id)
+        .filter((id) => !home.includes(id)),
+    ];
+  };
   const ids = () =>
     state.getSnapshot().page === "home" ? homeIds() : inventory.getSnapshot().apps.map((app) => app.id);
+  const menuIds = () => (cinema() ? cinemaIds() : ids());
   const scrollApps = () => state.getSnapshot().page === "home" && settings.getSnapshot().homeAppLayout === "scroll";
   const getScroller = (key: string) => {
     if (key.startsWith("continue:")) {
@@ -176,6 +193,21 @@ export const createHomeController = (
     return null;
   };
   const sourceKey = (source: { type: string; number?: number }) => "input:" + source.type + ":" + source.number;
+  // Settings first, inputs next, and the way back to Samsung's own Home last.
+  const railKeys = (): readonly string[] => [
+    "gear",
+    ...inventory.getSnapshot().inputs.map(sourceKey),
+    "samsung-home-shortcut",
+  ];
+  const cinemaRows = (): Rows => {
+    const columns = env.columns(settings.getSnapshot());
+    const chunk = (keys: readonly string[]) =>
+      Array.from({ length: Math.ceil(keys.length / columns) }, (_, index) =>
+        keys.slice(index * columns, (index + 1) * columns).map((id) => "app:" + id),
+      );
+    const home = homeIds();
+    return [...chunk(home), ...chunk(cinemaIds().slice(home.length))];
+  };
   const rows = (): readonly (readonly string[])[] => {
     const columns = env.columns(settings.getSnapshot());
     const all = ids();
@@ -193,6 +225,34 @@ export const createHomeController = (
     const inputRows = inputs.length ? [inputs.map(sourceKey)] : [];
     return [...appLayout, ...continueRows, ...inputRows];
   };
+  const focusCinema = () => {
+    const pending = state.getSnapshot();
+    const list = cinemaRows();
+    const rail = pending.rail === null ? [] : railKeys();
+    const first = list[0]?.[0] || "gear";
+    const known = list.some((row) => row.includes(pending.selected)) || rail.includes(pending.selected);
+    const selected = started && known ? pending.selected : first;
+    if (list.length) {
+      started = true;
+    }
+    if (selected !== pending.selected) {
+      cancelPress();
+    }
+    update({ selected, active: true, rail: rail.includes(selected) ? pending.rail : null });
+    const node = nodes.get(selected);
+    const main = env.rows.current;
+    if (!node || !main) {
+      return;
+    }
+    focusControl(node);
+    if (rail.includes(selected) || list[0]?.includes(selected)) {
+      update({ scroll: 0 });
+      return;
+    }
+    // Rows are measured in content coordinates, so the current translation cancels out.
+    const top = node.getBoundingClientRect().top - main.getBoundingClientRect().top;
+    update({ scroll: Math.max(0, Math.round(top - CINEMA_TOP_CLEARANCE)) });
+  };
   const focus = () => {
     if (document.hidden || runtime.settingsUi?.isOpen()) {
       update({ active: false });
@@ -204,9 +264,13 @@ export const createHomeController = (
       runtime.hideToast();
       cancelPress();
     }
-    if (pending.menu && !ids().includes(pending.menu.id)) {
+    if (pending.menu && !menuIds().includes(pending.menu.id)) {
       update({ menu: null });
       cancelPress();
+    }
+    if (cinema()) {
+      focusCinema();
+      return;
     }
     const list = rows();
     const old = state.getSnapshot().selected;
@@ -323,6 +387,9 @@ export const createHomeController = (
     }
   };
   const menuChoices = (): readonly HomeMenuChoice[] => {
+    if (cinema()) {
+      return homeIds().includes(state.getSnapshot().menu?.id || "") ? HOME_MENU_CHOICES : [APP_MENU_CHOICES.add];
+    }
     if (state.getSnapshot().page === "home") {
       return HOME_MENU_CHOICES;
     }
@@ -347,7 +414,7 @@ export const createHomeController = (
     settings.update({
       home: choice.action === "add" ? [...home, menu.id] : home.filter((id) => id !== menu.id),
     });
-    if (state.getSnapshot().page === "home") {
+    if (state.getSnapshot().page === "home" && !cinema()) {
       const after = ids();
       const nextApp = after[Math.min(Math.max(at, 0), after.length - 1)];
       const firstInput = inventory.getSnapshot().inputs[0];
@@ -357,6 +424,46 @@ export const createHomeController = (
     focus();
   };
   const K = runtime.config.KEY;
+  const closeRail = (restore: string) => {
+    update({ rail: null });
+    select(restore);
+  };
+  const navigateCinema = (code: number, current: HomeState, delta: number, rtl: boolean) => {
+    const back = code === K.BACK || code === K.ESC;
+    if (current.rail !== null) {
+      const keys = railKeys();
+      const inward = (code === K.RIGHT && !rtl) || (code === K.LEFT && rtl);
+      if (back || inward) {
+        closeRail(current.rail);
+      } else if (code === K.UP || code === K.DOWN) {
+        const index = keys.indexOf(current.selected) + delta;
+        select(keys[Math.max(0, Math.min(keys.length - 1, index))]);
+      }
+      return;
+    }
+    const all = cinemaRows();
+    const row = all.findIndex((items) => items.includes(current.selected));
+    const column = row < 0 ? 0 : all[row].indexOf(current.selected);
+    if (back) {
+      if (row > 0 && all[0]?.[0]) {
+        select(all[0][0]);
+      }
+      return;
+    }
+    const outward = (code === K.LEFT && !rtl) || (code === K.RIGHT && rtl);
+    if (row < 0 || (outward && column === 0)) {
+      update({ rail: current.selected || all[0]?.[0] || "" });
+      select("gear");
+      return;
+    }
+    const horizontal = code === K.LEFT || code === K.RIGHT;
+    const target = horizontal ? row : row + delta;
+    if (target < 0 || target >= all.length) {
+      return;
+    }
+    const next = horizontal ? column + delta : column;
+    select(all[target][Math.max(0, Math.min(all[target].length - 1, next))]);
+  };
   const keydown = (code: number, event: Pick<KeyboardEvent, "preventDefault">) =>
     transaction(() => {
       const current = state.getSnapshot();
@@ -416,6 +523,10 @@ export const createHomeController = (
             update({ menu: { id: selected.slice(4), selected: 0 } });
           }
         }, runtime.config.LONG_PRESS_MS);
+        return;
+      }
+      if (cinema()) {
+        navigateCinema(code, current, delta, rtl);
         return;
       }
       if (code === K.BACK || code === K.ESC) {

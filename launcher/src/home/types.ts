@@ -27,6 +27,8 @@ export interface HomeState {
   readonly menu: Readonly<{ id: string; selected: number }> | null;
   readonly moving: string | null;
   readonly page: Page;
+  /** Cinema side panel: the key to restore when it closes, or null while closed. */
+  readonly rail: string | null;
   readonly scroll: number;
   readonly selected: string;
 }

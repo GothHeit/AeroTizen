@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 
 import preact from "@preact/preset-vite";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
@@ -28,6 +28,34 @@ const widgetAssets = (output: string): Plugin => ({
   },
 });
 
+// Lists Top Shelf images at build time. Drop JPEG/PNG/WebP files into launcher/assets/shelf;
+// the weather scenes are used until any exist. Images ship as files, never inlined.
+const SHELF_MODULE = "virtual:shelf-images";
+const shelfImages: Plugin = {
+  name: "aerotizen-shelf-images",
+  resolveId: (id) => (id === SHELF_MODULE ? "\0" + SHELF_MODULE : undefined),
+  async load(id) {
+    if (id !== "\0" + SHELF_MODULE) {
+      return undefined;
+    }
+    const list = async (folder: string) => {
+      const names = await readdir(path.join(source, "assets", folder)).catch(() => [] as string[]);
+      return names
+        .filter((name) => /\.(jpe?g|png|webp)$/i.test(name))
+        .sort()
+        .map((name) => "assets/" + folder + "/" + name);
+    };
+    return (
+      "export const custom = " +
+      JSON.stringify(await list("shelf")) +
+      ";\n" +
+      "export const fallback = " +
+      JSON.stringify(await list("weather")) +
+      ";\n"
+    );
+  },
+};
+
 const developmentEntry: Plugin = {
   name: "aerotizen-development-entry",
   apply: "serve",
@@ -53,7 +81,7 @@ export default defineConfig(({ mode }) => {
       // Lightning CSS encodes major.minor.patch in three bytes, including in development.
       lightningcss: { targets: { chrome: 69 << 16 } },
     },
-    plugins: [preact({ devToolsEnabled: false }), widgetAssets(output), developmentEntry],
+    plugins: [preact({ devToolsEnabled: false }), widgetAssets(output), developmentEntry, shelfImages],
     server: { host: "0.0.0.0", port: 8019, strictPort: true },
     test: {
       include: ["src/**/*.test.{ts,tsx}"],

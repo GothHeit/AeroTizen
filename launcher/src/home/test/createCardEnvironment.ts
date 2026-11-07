@@ -14,6 +14,7 @@ export const createCardEnvironment = (selected = "", presentation: Partial<AppPr
     menu: null,
     moving: null,
     page: "home",
+    rail: null,
     scroll: 0,
     selected,
   });
