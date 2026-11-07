@@ -37,15 +37,15 @@ export const TopShelf = ({
   const { t } = useTranslation();
   const settings = useStore(env.settings);
   useStore(env.inventory);
-  const chosen = app ? selectFeature(env, app, t("home.continueWatching"), settings.continueWatching) : null;
+  const { current } = useStore(env.runtime.wallpapers);
+  const feature = app ? selectFeature(env, app, t("home.continueWatching"), settings.continueWatching) : null;
   // A pinned wallpaper stays put while the title and progress follow the focused app.
-  const pinned = getPinnedWallpaper(settings.shelfWallpaper);
-  const feature = chosen && pinned ? { ...chosen, image: pinned } : chosen;
+  // It also stays when the focused tile is not an app, such as the Fireplace.
+  const pinned = getPinnedWallpaper(settings.shelfWallpaper, current);
+  const image = pinned === undefined ? feature?.image : pinned;
   return (
     <div class={styles.shelf} data-top-shelf data-open={open ? "true" : "false"} aria-hidden="true">
-      {feature?.image ? (
-        <div key={feature.image} class={styles.image} style={{ backgroundImage: "url(" + feature.image + ")" }} />
-      ) : null}
+      {image ? <div key={image} class={styles.image} style={{ backgroundImage: "url(" + image + ")" }} /> : null}
       <div class={styles.scrim} />
       {feature ? (
         <div class={styles.meta} data-shelf-meta data-covered={covered ? "true" : "false"}>
