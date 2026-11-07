@@ -18,6 +18,7 @@ export interface WeatherLocation {
 export interface SettingsValues {
   aeroClockStyle: "vertical" | "horizontal" | "minimal" | "bold";
   background: string;
+  cinemaUi: boolean;
   clockLayout: "classic" | "custom";
   continueWatching: boolean;
   continueWatchingApps: string[];

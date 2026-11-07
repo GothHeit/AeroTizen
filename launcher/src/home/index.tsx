@@ -25,6 +25,7 @@ export const mountHome = (
   const syncShell = () => {
     const values = settings.getSnapshot();
     document.body.classList.toggle("glass-ui", values.glassSettings);
+    document.body.classList.toggle("cinema-ui", values.cinemaUi);
   };
   syncShell();
   const unsubscribeShell = settings.subscribe(syncShell);
@@ -59,7 +60,7 @@ export const mountHome = (
     render(null, mount);
     inventory.dispose();
     unsubscribeShell();
-    document.body.classList.remove("glass-ui");
+    document.body.classList.remove("glass-ui", "cinema-ui");
   };
   try {
     render(

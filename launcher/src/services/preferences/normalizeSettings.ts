@@ -60,6 +60,7 @@ export const normalizeSettings = (
   return {
     home: home === null ? null : validHome,
     glassSettings: boolean(data.glassSettings, defaults.glassSettings),
+    cinemaUi: boolean(data.cinemaUi, defaults.cinemaUi),
     homeCardColumns: typeof columns === "number" && [3, 4, 5].includes(columns) ? columns : defaults.homeCardColumns,
     homeAppLayout: choice(data.homeAppLayout, ["grid", "scroll"], defaults.homeAppLayout),
     background: text(data.background, defaults.background),

@@ -3,7 +3,7 @@
   flex: 0 0 auto;
   width: var(--app-card-size);
   height: var(--app-card-size);
-  border-radius: 10px;
+  border-radius: var(--home-card-radius);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -13,10 +13,29 @@
   transform: translateZ(0);
   transition: transform var(--motion-duration-focus) ease-out;
 
+  /* Static highlight; only its opacity animates, so focus stays cheap on TV GPUs. */
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--home-card-sheen);
+    opacity: 0;
+    transition: opacity var(--motion-duration-focus) ease-out;
+  }
+
   &[data-focused="true"] {
-    transform: translateZ(0) scale(1.035);
+    transform: translateZ(0) scale(var(--home-card-focus-scale));
     box-shadow: var(--home-card-focus-shadow);
     z-index: 2;
+
+    &::after {
+      opacity: 1;
+    }
   }
 
   &[data-moving="true"] {

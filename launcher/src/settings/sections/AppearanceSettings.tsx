@@ -1,11 +1,12 @@
 import { useTranslation } from "../../shared/i18n/useTranslation";
 import { ChoiceGroup } from "../components/ChoiceGroup";
 import { SettingsSection } from "../components/SettingsSection/SettingsSection";
-import type { SettingsSectionProps } from "../types";
+import type { InterfaceStyle, SettingsSectionProps } from "../types";
 
 const APPEARANCE_OPTIONS = [
-  { value: false, labelKey: "appearance.classic" },
-  { value: true, labelKey: "appearance.glass" },
+  { value: "classic", labelKey: "appearance.classic" },
+  { value: "glass", labelKey: "appearance.glass" },
+  { value: "cinema", labelKey: "appearance.cinema" },
 ] as const;
 
 const HOME_CARD_COLUMNS_OPTIONS = [
@@ -19,6 +20,13 @@ const HOME_APP_LAYOUT_OPTIONS = [
   { value: "scroll", labelKey: "appearance.scroll" },
 ] as const;
 
+const interfaceStyle = ({ cinemaUi, glassSettings }: SettingsSectionProps["settings"]): InterfaceStyle => {
+  if (cinemaUi) {
+    return "cinema";
+  }
+  return glassSettings ? "glass" : "classic";
+};
+
 export const AppearanceSettings = ({ settings, actions }: SettingsSectionProps) => {
   const { t } = useTranslation();
   return (
@@ -27,9 +35,9 @@ export const AppearanceSettings = ({ settings, actions }: SettingsSectionProps) 
         <ChoiceGroup
           id="settings-appearance"
           label={t("appearance.title")}
-          value={settings.glassSettings === true}
+          value={interfaceStyle(settings)}
           options={APPEARANCE_OPTIONS}
-          onSelect={actions.setGlassSettings}
+          onSelect={actions.setInterfaceStyle}
         />
       </SettingsSection>
       <SettingsSection title={t("appearance.size")}>

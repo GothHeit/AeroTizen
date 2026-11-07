@@ -85,7 +85,7 @@ export const createSettingsActions = (
         view.set({ ...view.getSnapshot(), colourPicker: null });
       });
     },
-    setGlassSettings: (glassSettings) => commit({ glassSettings }),
+    setInterfaceStyle: (style) => commit({ glassSettings: style === "glass", cinemaUi: style === "cinema" }),
     setWeatherPhoto: (weatherPhoto) =>
       commit({ weatherPhoto }, () => {
         services.applyWeatherVisibility();

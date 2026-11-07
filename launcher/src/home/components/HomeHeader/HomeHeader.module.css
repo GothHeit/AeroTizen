@@ -115,8 +115,10 @@
   &:last-child {
     min-width: 205px;
   }
-  &[aria-pressed="true"],
-  &[data-focused="true"] {
+  &[aria-pressed="true"] {
     color: var(--fg);
+  }
+  &[data-focused="true"] {
+    color: var(--header-tab-focus-text);
   }
 }

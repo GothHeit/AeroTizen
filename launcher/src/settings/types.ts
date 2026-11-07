@@ -27,6 +27,8 @@ import type { MutableStore, Store } from "../shared/state/createStore";
 
 import type { Category, SettingsDrawerState } from "./layout/categories";
 import type { ColourChannel, ColourPickerDraft } from "./state/colourPicker";
+export type InterfaceStyle = "classic" | "glass" | "cinema";
+
 export interface SettingsInventorySnapshot {
   readonly apps: readonly Readonly<InstalledApp>[];
   readonly continueMessage: MessageKey | "";
@@ -72,12 +74,12 @@ export interface SettingsActions {
   setClockLayout(layout: "classic" | SettingsValues["aeroClockStyle"]): void;
   setContinueWatching(enabled: boolean): void;
   setDateFormat(format: DateFormat): void;
-  setGlassSettings(enabled: boolean): void;
   setGradientStop(stop: 0 | 1): void;
   setHdmiKeepVisible(port: string, keep: boolean): void;
   setHdmiVisibility(hide: boolean): void;
   setHomeAppLayout(layout: SettingsValues["homeAppLayout"]): void;
   setHomeCardColumns(columns: number): void;
+  setInterfaceStyle(style: InterfaceStyle): void;
   setLiveTvVisible(visible: boolean): void;
   setLocation(location: WeatherLocation | null): void;
   setLocationVisible(visible: boolean): void;

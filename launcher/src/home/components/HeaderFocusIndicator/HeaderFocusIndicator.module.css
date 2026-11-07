@@ -31,5 +31,6 @@
 
   &[data-focused="true"] {
     border-color: var(--focus);
+    background: var(--header-focus-active-surface);
   }
 }
