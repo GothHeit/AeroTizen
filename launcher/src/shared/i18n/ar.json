@@ -8,6 +8,7 @@
   "home.allApps": "كل التطبيقات",
   "home.homeApps": "تطبيقات الرئيسية",
   "home.emptyApps": "لم يتم العثور على تطبيقات.",
+  "home.emptyAppsHint": "اضغط يمينًا لفتح الإعدادات ومصادر الإدخال.",
   "home.backToTop": "العودة إلى الأعلى",
   "home.continueWatching": "متابعة المشاهدة",
   "home.appActions": "إجراءات التطبيق",

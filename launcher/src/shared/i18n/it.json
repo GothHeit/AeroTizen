@@ -8,6 +8,7 @@
   "home.allApps": "Tutte le app",
   "home.homeApps": "App nella Home",
   "home.emptyApps": "Nessuna app trovata.",
+  "home.emptyAppsHint": "Premi Sinistra per Impostazioni e ingressi.",
   "home.backToTop": "Torna in cima",
   "home.continueWatching": "Continua a guardare",
   "home.appActions": "Azioni app",

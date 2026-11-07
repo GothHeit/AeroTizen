@@ -5,11 +5,27 @@
   overflow: hidden;
 }
 
+/* Pure black under the shelf and grid. It is a layer rather than this element's own paint,
+   so it hides with the rest when the side panel opens over an input's picture. */
+.base {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  background: #000;
+}
+
 .status {
   position: absolute;
   top: 36px;
   right: 72px;
   z-index: 3;
+  transition: opacity var(--motion-duration-enter) ease-out;
+
+  &[data-shown="false"] {
+    opacity: 0;
+  }
 }
 
 .viewport {
@@ -40,9 +56,4 @@
   font-size: 30px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.88);
-}
-
-.empty {
-  font-size: 28px;
-  color: var(--muted);
 }

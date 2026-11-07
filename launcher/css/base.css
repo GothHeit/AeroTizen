@@ -61,6 +61,14 @@ body.tv-peek [data-cinema-home] > :not([data-side-rail]):not([data-side-rail-dim
 body.previewing [data-home-content] {
   visibility: hidden;
 }
+/* Cinema paints its own black base over the whole screen, so an animated background behind
+   it would run unseen; stop it unless Settings is previewing one. */
+body.cinema-ui:not(.previewing) [data-background-host] {
+  display: none;
+}
+body.previewing [data-cinema-home] {
+  visibility: hidden;
+}
 body.editing [data-home-content] {
   visibility: hidden;
 }
