@@ -119,7 +119,16 @@ const getVerticalColumn = ({
 export const createHomeController = (
   env: Omit<
     HomeEnvironment,
-    "bridge" | "state" | "select" | "activate" | "showPage" | "choose" | "dismiss" | "menuChoices"
+    | "bridge"
+    | "state"
+    | "select"
+    | "activate"
+    | "showPage"
+    | "choose"
+    | "dismiss"
+    | "menuChoices"
+    | "findText"
+    | "finishFind"
   >,
   transaction: (action: () => void) => void,
 ) => {
@@ -136,6 +145,8 @@ export const createHomeController = (
     draft: null,
     menu: null,
     rail: null,
+    find: null,
+    typing: false,
   });
   let timer: number | undefined;
   let enterDown = false;
@@ -175,6 +186,14 @@ export const createHomeController = (
         .filter((id) => !home.includes(id)),
     ];
   };
+  // "Find an app" keeps the apps whose name holds the typed text, in grid order.
+  const findMatches = () => {
+    const query = (state.getSnapshot().find || "").trim().toLowerCase();
+    return cinemaIds().filter((id) => {
+      const app = runtime.apps.byId(id);
+      return Boolean(app) && (!query || app!.name.toLowerCase().includes(query));
+    });
+  };
   const ids = () =>
     state.getSnapshot().page === "home" ? homeIds() : inventory.getSnapshot().apps.map((app) => app.id);
   const menuIds = () => (cinema() ? cinemaIds() : ids());
@@ -193,9 +212,11 @@ export const createHomeController = (
     return null;
   };
   const sourceKey = (source: { type: string; number?: number }) => "input:" + source.type + ":" + source.number;
-  // Settings first, inputs next, and the way back to Samsung's own Home last.
+  // Settings and search first, inputs next, and the way back to Samsung's own Home last.
   const railKeys = (): readonly string[] => [
     "gear",
+    "find",
+    "search",
     ...inventory.getSnapshot().inputs.map(sourceKey),
     "samsung-home-shortcut",
   ];
@@ -205,6 +226,9 @@ export const createHomeController = (
       Array.from({ length: Math.ceil(keys.length / columns) }, (_, index) =>
         keys.slice(index * columns, (index + 1) * columns).map((id) => "app:" + id),
       );
+    if (state.getSnapshot().find !== null) {
+      return chunk(findMatches());
+    }
     const home = homeIds();
     return [...chunk(home), ...chunk(cinemaIds().slice(home.length))];
   };
@@ -239,6 +263,11 @@ export const createHomeController = (
       cancelPress();
     }
     update({ selected, active: true, rail: rail.includes(selected) ? pending.rail : null });
+    // The find field keeps the browser focus, and the TV keyboard, while text is typed.
+    if (pending.typing) {
+      update({ scroll: 0 });
+      return;
+    }
     const node = nodes.get(selected);
     const main = env.rows.current;
     if (!node || !main) {
@@ -348,6 +377,12 @@ export const createHomeController = (
     update({ page, appsEndOffset: 0, scroll: 0, menu: null, selected: page === "home" ? "home-tab" : "apps-tab" });
     focus();
   };
+  // A dock action that replaces the dock: close it without restoring the old focus.
+  const closeRailFor = () => {
+    if (state.getSnapshot().rail !== null) {
+      update({ rail: null });
+    }
+  };
   const activate = (key: string) => {
     // In the panel over an input: another input switches the picture; anything else leaves it.
     if (runtime.inputs.peeking) {
@@ -366,6 +401,13 @@ export const createHomeController = (
         select(rail);
       }
       runtime.settingsUi?.open();
+    } else if (key === "search") {
+      // Samsung's own search, across Smart Hub (ported from kshitizwagle's tvOS fork).
+      closeRailFor();
+      runtime.apps.launch({ id: runtime.config.SEARCH_APP_ID, name: runtime.translate("home.search") });
+    } else if (key === "find") {
+      closeRailFor();
+      update({ find: state.getSnapshot().find || "", typing: true, scroll: 0 });
     } else if (key === "samsung-home-shortcut") {
       if (runtime.homewatch.openSamsungHome) {
         runtime.homewatch.openSamsungHome();
@@ -446,8 +488,43 @@ export const createHomeController = (
     update({ rail: null });
     select(restore);
   };
+  const clearFind = () => {
+    update({ find: null, typing: false });
+    const first = cinemaRows()[0]?.[0];
+    if (first) {
+      select(first);
+    }
+  };
+  const findText = (text: string) => update({ find: text });
+  const finishFind = (cancel: boolean) => {
+    if (cancel) {
+      clearFind();
+      return;
+    }
+    update({ typing: false });
+    const first = cinemaRows()[0]?.[0];
+    if (first) {
+      select(first);
+    } else {
+      // Nothing matches: leave the filter rather than strand the remote on an empty grid.
+      clearFind();
+    }
+  };
   const navigateCinema = (code: number, current: HomeState, delta: number, rtl: boolean) => {
     const back = code === K.BACK || code === K.ESC;
+    if (current.find !== null && current.rail === null) {
+      const found = cinemaRows();
+      const inTop = !found.length || found[0].includes(current.selected);
+      if (back) {
+        clearFind();
+        return;
+      }
+      // Up from the first row goes back into the find field.
+      if (code === K.UP && inTop) {
+        update({ typing: true });
+        return;
+      }
+    }
     if (current.rail !== null) {
       const keys = railKeys();
       const inward = (code === K.RIGHT && !rtl) || (code === K.LEFT && rtl);
@@ -609,11 +686,12 @@ export const createHomeController = (
         select(rail);
       }
     },
+    finishFind,
     peekInput(key: string) {
       const top = cinemaRows()[0]?.[0] || "";
       update({ active: true, menu: null, rail: state.getSnapshot().rail ?? top });
       select(railKeys().includes(key) ? key : "gear");
     },
   };
-  return { ...env, state, bridge, select, activate, showPage, choose, dismiss, menuChoices };
+  return { ...env, state, bridge, select, activate, showPage, choose, dismiss, menuChoices, findText, finishFind };
 };

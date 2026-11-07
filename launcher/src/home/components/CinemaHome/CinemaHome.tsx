@@ -7,6 +7,7 @@ import { getPinnedWallpaper, getShelfImage } from "../../presentation/shelf";
 import type { HomeEnvironment } from "../../types";
 import { AppActionsMenu } from "../AppActionsMenu/AppActionsMenu";
 import { CinemaTiles } from "../CinemaTiles/CinemaTiles";
+import { FindBar } from "../FindBar/FindBar";
 import { SideRail } from "../SideRail/SideRail";
 import { SoftBackdrop } from "../SoftBackdrop/SoftBackdrop";
 import { TopShelf } from "../TopShelf/TopShelf";
@@ -22,16 +23,26 @@ const ROW_MOVE = "var(--motion-duration-scroll)";
 export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   const { t } = useTranslation();
   const settings = useStore(env.settings);
-  const { active, draft, rail, scroll, selected } = useStore(env.state);
+  const { active, draft, find, rail, scroll, selected, typing } = useStore(env.state);
   const { apps, inputs, items, ready } = useStore(env.inventory);
   const saved = draft || (settings.homeInitialized ? settings.home : [env.runtime.config.FIREPLACE_ID]);
   const home = saved.filter(
     (id) => id === env.runtime.config.FIREPLACE_ID || !ready || apps.some((app) => app.id === id),
   );
   const others = apps.map((app) => app.id).filter((id) => !home.includes(id));
+  // "Find an app" shows only the apps whose name holds the typed text, in the same order.
+  const query = (find || "").trim().toLowerCase();
+  const found =
+    find === null
+      ? []
+      : [...home, ...others].filter((id) => {
+          const app = apps.find((entry) => entry.id === id);
+          return Boolean(app) && (!query || app!.name.toLowerCase().includes(query));
+        });
   // With no favourites, every app moves up into the top row's place under the shelf.
-  const firstIds = home.length ? home : others;
-  const restIds = home.length ? others : [];
+  const grid = home.length ? { first: home, rest: others } : { first: others, rest: [] as string[] };
+  const firstIds = find === null ? grid.first : found;
+  const restIds = find === null ? grid.rest : [];
   const topRow = firstIds.slice(0, TOP_ROW).map((id) => "app:" + id);
   const shelfKey = topRow.includes(rail ?? selected) ? (rail ?? selected) : topRow[0];
   const shelfApp = shelfKey ? apps.find((app) => "app:" + app.id === shelfKey) || null : null;
@@ -44,7 +55,7 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   previous.current = scroll;
   useLayoutEffect(() => {
     env.bridge.focus();
-  }, [env, apps, inputs, items, ready, settings.home, settings.homeInitialized, draft]);
+  }, [env, apps, inputs, items, ready, settings.home, settings.homeInitialized, draft, find]);
   return (
     <div class={styles.home} data-home data-cinema-home>
       <div class={styles.base} />
@@ -65,7 +76,7 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
             transitionDuration: crossesShelf ? SHELF_MOVE : ROW_MOVE,
           }}
         >
-          <CinemaTiles env={env} ids={firstIds} apps={apps} active={active} />
+          <CinemaTiles env={env} ids={firstIds} apps={apps} active={active && !typing} />
           {restIds.length ? (
             <section class={styles.section}>
               <h2 class={styles.heading}>{t("home.allApps")}</h2>
@@ -74,6 +85,7 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
           ) : null}
         </main>
       </div>
+      {find !== null ? <FindBar env={env} text={find} typing={typing} matches={found.length} /> : null}
       <SideRail env={env} image={backdrop} />
       <AppActionsMenu env={env} />
     </div>

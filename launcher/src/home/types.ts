@@ -24,6 +24,8 @@ export interface HomeState {
   readonly appsEndOffset: number;
   readonly continueOffset: number;
   readonly draft: readonly string[] | null;
+  /** Cinema "Find an app": the typed filter, or null while the grid shows every app. */
+  readonly find: string | null;
   readonly menu: Readonly<{ id: string; selected: number }> | null;
   readonly moving: string | null;
   readonly page: Page;
@@ -31,6 +33,8 @@ export interface HomeState {
   readonly rail: string | null;
   readonly scroll: number;
   readonly selected: string;
+  /** True while the find field owns the remote and the TV keyboard is up. */
+  readonly typing: boolean;
 }
 export interface HomeEnvironment {
   activate(key: string): void;
@@ -43,6 +47,9 @@ export interface HomeEnvironment {
   continueViewport: RefObject<HTMLDivElement>;
   describe(app: InstalledApp): AppPresentation;
   dismiss(): void;
+  /** Cinema "Find an app": follow the typed text, or leave the field (cancel clears it). */
+  findText(text: string): void;
+  finishFind(cancel: boolean): void;
   inventory: Store<Inventory>;
   menuChoices(): readonly HomeMenuChoice[];
   nodes: Map<string, HTMLElement>;

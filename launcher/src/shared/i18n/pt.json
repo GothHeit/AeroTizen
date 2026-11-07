@@ -275,5 +275,9 @@
   "wallpaper.firstColour": "Primeira cor",
   "wallpaper.secondColour": "Segunda cor",
   "wallpaper.direction": "Direção",
-  "wallpaper.gradientHint": "OK seleciona uma cor. Cima/Baixo: escolha um controle. Esquerda/Direita: ajuste. Segure para ajustar mais rápido."
+  "wallpaper.gradientHint": "OK seleciona uma cor. Cima/Baixo: escolha um controle. Esquerda/Direita: ajuste. Segure para ajustar mais rápido.",
+  "home.search": "Pesquisar",
+  "home.findApp": "Encontrar um app",
+  "home.findHint": "Digite o nome de um app",
+  "home.findNone": "Nenhum app encontrado"
 }

@@ -1,0 +1,56 @@
+/* Sits where the Top Shelf's sky is emptiest; static paint only. */
+.find {
+  position: absolute;
+  top: 72px;
+  left: 96px;
+  z-index: 3;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  width: 760px;
+  height: 76px;
+  padding: 0 30px;
+  border-radius: 38px;
+  background: rgba(28, 28, 30, 0.86);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  color: rgba(235, 235, 245, 0.62);
+
+  /* Explicit margin instead of flex gap, for older TV engines. */
+  & > svg {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    margin-right: 20px;
+  }
+}
+
+.find[data-typing="true"] .field {
+  background: #fff;
+  color: #111;
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 30px;
+  font-weight: 600;
+
+  &::placeholder {
+    color: inherit;
+    opacity: 0.7;
+  }
+}
+
+.none {
+  margin: 22px 0 0 30px;
+  font-size: 26px;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}

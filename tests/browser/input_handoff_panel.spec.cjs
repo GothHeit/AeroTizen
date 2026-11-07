@@ -20,7 +20,7 @@ test("Home from a handed-off input returns to AeroTizen's Home", async ({ page }
   await page.waitForFunction(() => AeroTizen.apps.ready && AeroTizen.inputs.sources.length > 0);
   await page.evaluate(() => {
     window.handoffs = [];
-    AeroTizen.homewatch.openNativeLiveTV = (source) => {
+    AeroTizen.homewatch.openNativeViewer = (source) => {
       window.handoffs.push(source.type + " " + source.number);
       return true;
     };

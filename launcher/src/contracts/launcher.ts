@@ -67,6 +67,8 @@ export interface LauncherConfig {
   KEY: Record<"LEFT" | "RIGHT" | "UP" | "DOWN" | "ENTER" | "BACK" | "ESC" | "IME_DONE" | "IME_CANCEL", number>;
   LEGACY_STORAGE_KEYS: string[];
   LONG_PRESS_MS: number;
+  /** Samsung's Smart Hub search app. */
+  SEARCH_APP_ID: string;
   SPEED: { MIN: number; MAX: number; STEP: number };
   STORAGE_KEY: string;
 }
@@ -113,6 +115,8 @@ export interface HomeBridge {
   buildRows(): void;
   /** Cinema only: close the side panel, e.g. when Home leaves an input. */
   closePanel?(): void;
+  /** Cinema only: the find field's keyboard closed; cancel clears the filter. */
+  finishFind?(cancel: boolean): void;
   focus(): void;
   keydown(code: number, event: Pick<KeyboardEvent, "preventDefault">): void;
   keyup(code: number): void;

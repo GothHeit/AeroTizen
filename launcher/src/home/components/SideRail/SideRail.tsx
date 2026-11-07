@@ -1,4 +1,4 @@
-import { House, Settings } from "lucide-preact";
+import { House, Search, Settings, TextSearch } from "lucide-preact";
 
 import { useStore } from "../../../shared/hooks/useStore";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
@@ -10,7 +10,7 @@ import { RailItem } from "./RailItem";
 import styles from "./SideRail.module.css";
 
 /**
- * Left-edge dock for everything that is not an app: Settings, inputs and Samsung Home.
+ * Left-edge dock for everything that is not an app: Settings, search, inputs and Samsung Home.
  * Its glass is a pre-blurred copy of the Home picture lined up with the screen, so the TV
  * never runs a live blur. The copy is painted only while the dock is open.
  */
@@ -32,6 +32,8 @@ export const SideRail = ({ env, image = null }: { env: HomeEnvironment; image?: 
         <RailItem env={env} controlKey="gear" icon={Settings} title={t("common.settings")} open={open}>
           {unread ? <span class={styles.notice} data-home-update-notice aria-hidden="true" /> : null}
         </RailItem>
+        <RailItem env={env} controlKey="find" icon={TextSearch} title={t("home.findApp")} open={open} />
+        <RailItem env={env} controlKey="search" icon={Search} title={t("home.search")} open={open} />
         {inputs.length ? <div class={styles.rule} /> : null}
         {inputs.map((source) => (
           <RailInput key={source.type + ":" + source.number} env={env} source={source} open={open} />

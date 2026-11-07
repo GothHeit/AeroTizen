@@ -275,5 +275,9 @@
   "wallpaper.firstColour": "اللون الأول",
   "wallpaper.secondColour": "اللون الثاني",
   "wallpaper.direction": "الاتجاه",
-  "wallpaper.gradientHint": "OK لاختيار لون. أعلى/أسفل: اختر أداة. يمين/يسار: اضبط. اضغط مطولاً للضبط أسرع."
+  "wallpaper.gradientHint": "OK لاختيار لون. أعلى/أسفل: اختر أداة. يمين/يسار: اضبط. اضغط مطولاً للضبط أسرع.",
+  "home.search": "بحث",
+  "home.findApp": "ابحث عن تطبيق",
+  "home.findHint": "اكتب اسم التطبيق",
+  "home.findNone": "لا توجد تطبيقات مطابقة"
 }

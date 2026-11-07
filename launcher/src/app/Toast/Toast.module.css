@@ -1,3 +1,5 @@
+/* Toasts rise in and fade out a little faster than they arrive (from kshitizwagle's fork).
+   Opacity and transform only, so the TV composites them without repainting the Home. */
 .toast {
   position: fixed;
   left: 50%;
@@ -8,4 +10,23 @@
   border-radius: 12px;
   background: var(--toast-surface);
   font-size: 26px;
+  opacity: 1;
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+    display 200ms allow-discrete;
+
+  &[hidden] {
+    display: none;
+    opacity: 0;
+    transform: translate(-50%, 12px);
+    transition-duration: 150ms;
+  }
+}
+
+@starting-style {
+  .toast:not([hidden]) {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
 }
