@@ -51,6 +51,11 @@ body.tv [data-home-content] {
 body.tv [data-cinema-home] {
   visibility: hidden;
 }
+/* Home over an input: the side panel shows on top of the live picture. */
+body.tv.tv-panel [data-cinema-home] [data-side-rail],
+body.tv.tv-panel [data-cinema-home] [data-side-rail-dim] {
+  visibility: visible;
+}
 body.previewing [data-home-content] {
   visibility: hidden;
 }

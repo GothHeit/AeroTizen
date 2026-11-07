@@ -10,6 +10,7 @@
     cfg = A.config;
   var homePending = false,
     livePending = false;
+  var NO_FOCUS_WINDOW_MS = 15000;
 
   function report(name, action, operation, reason) {
     var log = window.AeroDiagnostics;
@@ -162,13 +163,32 @@
       report("accepted", "live_tv", operation);
       // A Tizen launch success callback only confirms that launch was
       // accepted. It does not guarantee the native viewer took focus.
-      window.setTimeout(function () {
-        if (!document.hidden) {
-          report("visibility_unconfirmed", "live_tv", operation);
-          rearmWatcher();
-          A.toast(A.translate("handoff.liveTvNoFocus"));
+      // Rearming the Home watcher here pulled the launcher back over a viewer
+      // that was simply slow to cover it, and kept the remote from the console.
+      // Only a key that still reaches the launcher proves the viewer never came.
+      var acceptedAt = Date.now();
+      function stopWaiting() {
+        document.removeEventListener("keydown", stillHere, true);
+        document.removeEventListener("visibilitychange", covered);
+      }
+      // Once the viewer has covered the launcher, later keys here are a return via Home.
+      function covered() {
+        if (document.hidden) {
+          stopWaiting();
         }
-      }, 2100);
+      }
+      function stillHere() {
+        stopWaiting();
+        if (document.hidden || Date.now() - acceptedAt > NO_FOCUS_WINDOW_MS) {
+          return;
+        }
+        report("visibility_unconfirmed", "live_tv", operation);
+        rearmWatcher();
+        A.toast(A.translate("handoff.liveTvNoFocus"));
+      }
+      document.addEventListener("keydown", stillHere, true);
+      document.addEventListener("visibilitychange", covered);
+      window.setTimeout(stopWaiting, NO_FOCUS_WINDOW_MS);
     }
     function appControlFallback() {
       if (finished) {

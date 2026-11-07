@@ -349,9 +349,13 @@ export const createHomeController = (
     focus();
   };
   const activate = (key: string) => {
-    // Any choice in the panel over an input's picture closes that picture first.
+    // In the panel over an input: another input switches the picture; anything else leaves it.
     if (runtime.inputs.peeking) {
       runtime.inputs.endPeek?.();
+      update({ rail: null });
+      if (!key.startsWith("input:")) {
+        runtime.inputs.leave?.();
+      }
     }
     if (key === "gear") {
       endMove();
@@ -435,8 +439,13 @@ export const createHomeController = (
   };
   const K = runtime.config.KEY;
   const closeRail = (restore: string) => {
+    // Closing the panel over an input goes back to that input's picture (and its remote).
     if (runtime.inputs.peeking) {
-      runtime.inputs.endPeek?.();
+      if (runtime.inputs.backToInput) {
+        runtime.inputs.backToInput();
+      } else {
+        runtime.inputs.endPeek?.();
+      }
     }
     update({ rail: null });
     select(restore);
@@ -597,6 +606,13 @@ export const createHomeController = (
     },
     keydown,
     keyup,
+    closePanel() {
+      const rail = state.getSnapshot().rail;
+      if (rail !== null) {
+        update({ rail: null });
+        select(rail);
+      }
+    },
     peekInput(key: string) {
       const top = cinemaRows()[0]?.[0] || "";
       update({ active: true, menu: null, rail: state.getSnapshot().rail ?? top });

@@ -47,7 +47,9 @@ export interface LauncherRuntime {
     peeking?: boolean;
     sources: InputSource[];
     watching: boolean;
+    backToInput?(): void;
     endPeek?(): void;
+    leave?(): void;
     alwaysVisible?(source: InputSource): boolean;
     hasRecognizedDevice?(source: InputSource): boolean;
     isVisible(source: InputSource): boolean;

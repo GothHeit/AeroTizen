@@ -111,6 +111,8 @@ export interface ContinueItem {
 export interface HomeBridge {
   blur(): void;
   buildRows(): void;
+  /** Cinema only: close the side panel, e.g. when Home leaves an input. */
+  closePanel?(): void;
   focus(): void;
   keydown(code: number, event: Pick<KeyboardEvent, "preventDefault">): void;
   keyup(code: number): void;
