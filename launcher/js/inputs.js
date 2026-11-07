@@ -228,54 +228,27 @@
     return "input:" + s.type + ":" + s.number;
   }
 
-  // Show the input's live picture behind the side panel. Nothing changes the source.
+  // Back from Samsung's viewer, open the side panel on that input. The live picture is not
+  // shown behind it: showing the TV window here made the TV hand the screen straight back to
+  // the viewer. Nothing changes the source.
   function peek() {
     var s = handedOff;
     handedOff = null;
-    if (!s || inputs.peeking || !tz || !tz.tvwindow || !A.homeScreen || !A.homeScreen.peekInput) {
+    if (!s || inputs.peeking || !A.homeScreen || !A.homeScreen.peekInput) {
       return;
     }
     peekStarted = Date.now();
     inputs.peeking = true;
-    document.body.classList.add("tv-peek");
-    document.documentElement.style.background = "transparent";
-    window.Backgrounds.suspend();
     A.homeScreen.peekInput(sourceKey(s));
-    try {
-      tz.tvwindow.show(
-        function () {},
-        function () {
-          inputs.endPeek();
-        },
-        ["0px", "0px", "1920px", "1080px"],
-        "MAIN"
-      );
-    } catch (e) {
-      inputs.endPeek();
-    }
   }
 
   inputs.peeking = false;
   inputs.endPeek = function () {
-    if (!inputs.peeking) {
-      return;
-    }
     inputs.peeking = false;
-    document.body.classList.remove("tv-peek");
-    A.applyBackground();
-    try {
-      tz.tvwindow.hide(
-        function () {},
-        function () {},
-        "MAIN"
-      );
-    } catch (e) {
-      /* already hidden */
-    }
   };
 
-  // Home returns here (event, visibility, or both). The first return opens the panel over
-  // the picture; Home again a moment later goes straight to AeroTizen's own Home.
+  // Home returns here (event, visibility, or both). The first return opens the side panel;
+  // Home again a moment later goes straight to AeroTizen's own Home.
   function returned() {
     if (handedOff) {
       peek();
