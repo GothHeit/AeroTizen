@@ -279,5 +279,12 @@
   "home.search": "Cerca",
   "home.findApp": "Trova un'app",
   "home.findHint": "Digita il nome di un'app",
-  "home.findNone": "Nessuna app corrispondente"
+  "home.findNone": "Nessuna app corrispondente",
+  "appearance.screensaver": "Salvaschermo",
+  "appearance.screensaverHint": "Le tue immagini scorrono lente quando la Home resta inattiva. Qualsiasi tasto la riattiva.",
+  "appearance.minutes5": "5 minuti",
+  "appearance.minutes15": "15 minuti",
+  "appearance.hour1": "1 ora",
+  "appearance.nightDim": "Attenua di notte",
+  "appearance.nightDimHint": "Dalle 23 alle 7 il launcher è più scuro. App e ingressi non vengono attenuati."
 }

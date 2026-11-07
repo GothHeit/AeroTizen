@@ -33,7 +33,11 @@ export interface SettingsValues {
   homeCardColumns: number;
   inputNames: Record<string, string>;
   language: string;
+  /** Dim the launcher between 23:00 and 07:00. */
+  nightDim: boolean;
   numerals: "latn" | "arab";
+  /** Minutes on an idle Home before the screensaver starts; 0 turns it off. */
+  screensaverMinutes: number;
   /** Cinema Top Shelf picture: "" lets each app show its own art, "black" is plain black, else a file name on GitHub. */
   shelfWallpaper: string;
   showLiveTv: boolean;

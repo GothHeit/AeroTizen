@@ -8,6 +8,8 @@ import type { HomeEnvironment } from "../../types";
 import { AppActionsMenu } from "../AppActionsMenu/AppActionsMenu";
 import { CinemaTiles } from "../CinemaTiles/CinemaTiles";
 import { FindBar } from "../FindBar/FindBar";
+import { NightVeil } from "../NightVeil/NightVeil";
+import { Screensaver } from "../Screensaver/Screensaver";
 import { SideRail } from "../SideRail/SideRail";
 import { SoftBackdrop } from "../SoftBackdrop/SoftBackdrop";
 import { TopShelf } from "../TopShelf/TopShelf";
@@ -50,6 +52,14 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   const pinned = getPinnedWallpaper(settings.shelfWallpaper, current);
   const shelfImage = shelfApp ? getShelfImage(shelfApp) : null;
   const backdrop = pinned === undefined ? shelfImage : pinned;
+  // The screensaver plays the pinned picture and the top row's Top Shelf art.
+  const saverImages = [
+    ...(pinned ? [pinned] : []),
+    ...firstIds.slice(0, TOP_ROW).map((id) => {
+      const app = apps.find((entry) => entry.id === id);
+      return app ? getShelfImage(app) : null;
+    }),
+  ].filter((image, index, list): image is string => Boolean(image) && list.indexOf(image) === index);
   const previous = useRef(scroll);
   const crossesShelf = (previous.current === 0) !== (scroll === 0);
   previous.current = scroll;
@@ -88,6 +98,8 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
       {find !== null ? <FindBar env={env} text={find} typing={typing} matches={found.length} /> : null}
       <SideRail env={env} image={backdrop} />
       <AppActionsMenu env={env} />
+      <NightVeil enabled={settings.nightDim} />
+      <Screensaver env={env} minutes={settings.screensaverMinutes} images={saverImages} />
     </div>
   );
 };

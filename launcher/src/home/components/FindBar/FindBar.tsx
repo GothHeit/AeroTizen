@@ -48,7 +48,7 @@ export const FindBar = ({
           placeholder={t("home.findHint")}
           autocomplete="off"
           spellcheck={false}
-          onInput={(event) => env.findText((event.currentTarget).value)}
+          onInput={(event) => env.findText(event.currentTarget.value)}
         />
       </div>
       {text.trim() && !matches ? <div class={styles.none}>{t("home.findNone")}</div> : null}

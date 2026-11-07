@@ -1,5 +1,6 @@
 import { useTranslation } from "../../shared/i18n/useTranslation";
 import { ChoiceGroup } from "../components/ChoiceGroup";
+import { SettingsHint } from "../components/SettingsHint/SettingsHint";
 import { SettingsSection } from "../components/SettingsSection/SettingsSection";
 import type { InterfaceStyle, SettingsSectionProps } from "../types";
 
@@ -18,6 +19,18 @@ const HOME_CARD_COLUMNS_OPTIONS = [
 const HOME_APP_LAYOUT_OPTIONS = [
   { value: "grid", labelKey: "appearance.grid" },
   { value: "scroll", labelKey: "appearance.scroll" },
+] as const;
+
+const SCREENSAVER_OPTIONS = [
+  { value: "0", labelKey: "common.off" },
+  { value: "5", labelKey: "appearance.minutes5" },
+  { value: "15", labelKey: "appearance.minutes15" },
+  { value: "60", labelKey: "appearance.hour1" },
+] as const;
+
+const ON_OFF_OPTIONS = [
+  { value: true, labelKey: "common.on" },
+  { value: false, labelKey: "common.off" },
 ] as const;
 
 const interfaceStyle = ({ cinemaUi, glassSettings }: SettingsSectionProps["settings"]): InterfaceStyle => {
@@ -40,6 +53,30 @@ export const AppearanceSettings = ({ settings, actions }: SettingsSectionProps) 
           onSelect={actions.setInterfaceStyle}
         />
       </SettingsSection>
+      {settings.cinemaUi ? (
+        <>
+          <SettingsSection title={t("appearance.screensaver")}>
+            <ChoiceGroup
+              id="screensaver-minutes"
+              label={t("appearance.screensaver")}
+              value={String(settings.screensaverMinutes)}
+              options={SCREENSAVER_OPTIONS}
+              onSelect={(value) => actions.setScreensaverMinutes(Number(value))}
+            />
+            <SettingsHint>{t("appearance.screensaverHint")}</SettingsHint>
+          </SettingsSection>
+          <SettingsSection title={t("appearance.nightDim")}>
+            <ChoiceGroup
+              id="night-dim"
+              label={t("appearance.nightDim")}
+              value={settings.nightDim}
+              options={ON_OFF_OPTIONS}
+              onSelect={actions.setNightDim}
+            />
+            <SettingsHint>{t("appearance.nightDimHint")}</SettingsHint>
+          </SettingsSection>
+        </>
+      ) : null}
       {/* Cinema always shows rows of six wide tiles, so size and layout would do nothing there. */}
       {settings.cinemaUi ? null : (
         <>

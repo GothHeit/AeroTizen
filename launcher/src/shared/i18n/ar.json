@@ -279,5 +279,12 @@
   "home.search": "بحث",
   "home.findApp": "ابحث عن تطبيق",
   "home.findHint": "اكتب اسم التطبيق",
-  "home.findNone": "لا توجد تطبيقات مطابقة"
+  "home.findNone": "لا توجد تطبيقات مطابقة",
+  "appearance.screensaver": "شاشة التوقف",
+  "appearance.screensaverHint": "تتحرك صورك ببطء عندما تبقى الشاشة الرئيسية خاملة. أي زر يوقظها.",
+  "appearance.minutes5": "5 دقائق",
+  "appearance.minutes15": "15 دقيقة",
+  "appearance.hour1": "ساعة واحدة",
+  "appearance.nightDim": "تعتيم ليلاً",
+  "appearance.nightDimHint": "من 11 مساءً حتى 7 صباحًا يصبح المشغّل أغمق. لا تُعتَّم التطبيقات والمداخل."
 }
