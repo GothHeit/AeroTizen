@@ -1,6 +1,6 @@
 import type { InstalledApp } from "../../../contracts/launcher";
 import type { HomeEnvironment } from "../../types";
-import { AppCard } from "../AppCard";
+import { CinemaAppTile } from "../CinemaAppTile/CinemaAppTile";
 import { FireplaceCard } from "../FireplaceCard/FireplaceCard";
 
 import styles from "./CinemaTiles.module.css";
@@ -23,7 +23,7 @@ export const CinemaTiles = ({
         return <FireplaceCard key={id} env={env} registered />;
       }
       const app = apps.find((entry) => entry.id === id) || { id, name: id, icon: "" };
-      return <AppCard key={id} env={env} app={app} active={active} />;
+      return <CinemaAppTile key={id} env={env} app={app} active={active} />;
     })}
   </div>
 );

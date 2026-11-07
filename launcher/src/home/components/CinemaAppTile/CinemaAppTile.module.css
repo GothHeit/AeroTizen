@@ -1,0 +1,49 @@
+.tile {
+  position: relative;
+  width: var(--app-card-width);
+  height: var(--app-card-size);
+}
+
+/* Square art fits the tile height; its sides continue through the tile background or blur. */
+.art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+/* Round and rounded icons sit a little smaller on their own glow. */
+.inset {
+  top: 11%;
+  height: 78%;
+}
+
+.blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Sits in the row gap, below the focused tile's scaled edge. */
+.name {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: -24px;
+  right: -24px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
