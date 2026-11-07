@@ -6,7 +6,7 @@
 }
 
 /* Pure black under the shelf and grid. It is a layer rather than this element's own paint,
-   so it hides with the rest when the side panel opens over an input's picture. */
+   so it hides with the rest of Cinema over a full-screen input. */
 .base {
   position: absolute;
   top: 0;
