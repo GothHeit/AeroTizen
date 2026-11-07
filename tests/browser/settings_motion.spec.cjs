@@ -52,7 +52,7 @@ for (const [build, url] of [
       };
       await page.emulateMedia({ reducedMotion: "reduce" });
       await expectReduced();
-      await page.locator(`[data-key="settings-appearance:${!glassSettings}"]`).click();
+      await page.locator(`[data-key="settings-appearance:${glassSettings ? "classic" : "glass"}"]`).click();
       expect(await page.evaluate(() => AeroTizen.settings.getSnapshot().glassSettings)).toBe(!glassSettings);
       await expectReduced();
       await page.keyboard.press("ArrowDown");

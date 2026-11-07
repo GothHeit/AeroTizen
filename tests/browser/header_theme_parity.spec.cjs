@@ -32,7 +32,7 @@ for (const clockLayout of ["classic", "custom"]) {
       await page.locator("#gear").click();
       await page.locator('[data-key="section:appearance"]').click();
       await expect(page.getByRole("button", { name: "Settings", exact: true })).toHaveCount(0);
-      await page.locator(`[data-key="settings-appearance:${glass}"]`).click();
+      await page.locator(`[data-key="settings-appearance:${glass ? "glass" : "classic"}"]`).click();
       await page.keyboard.press("Escape");
       await page.keyboard.press("Escape");
       expect(await geometry()).toEqual(before);
