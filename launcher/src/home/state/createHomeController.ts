@@ -439,13 +439,9 @@ export const createHomeController = (
   };
   const K = runtime.config.KEY;
   const closeRail = (restore: string) => {
-    // Closing the panel over an input goes back to that input's picture (and its remote).
+    // Closing the panel over an embedded input goes back to its picture.
     if (runtime.inputs.peeking) {
-      if (runtime.inputs.backToInput) {
-        runtime.inputs.backToInput();
-      } else {
-        runtime.inputs.endPeek?.();
-      }
+      runtime.inputs.endPeek?.();
     }
     update({ rail: null });
     select(restore);

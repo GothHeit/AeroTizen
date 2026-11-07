@@ -1,14 +1,14 @@
 const { test, expect } = require("@playwright/test");
 
-// Cinema hands HDMI to Samsung's viewer (the remote reaches the console). Home there opens the
-// side panel; closing it hands the input back; anything else in the panel leaves the input.
+// Cinema hands HDMI to Samsung's viewer, so the remote reaches the console. Home there comes
+// straight back to AeroTizen's Home with the side panel closed, and no picture behind it.
 const setHidden = (page, hidden) =>
   page.evaluate((hidden) => {
     Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
     document.dispatchEvent(new Event("visibilitychange"));
   }, hidden);
 
-test("Home from a handed-off input opens the panel; Right hands it back", async ({ page }) => {
+test("Home from a handed-off input returns to AeroTizen's Home", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route("https://**/*", (r) => r.fulfill({ body: "{}" }));
@@ -24,40 +24,24 @@ test("Home from a handed-off input opens the panel; Right hands it back", async 
       window.handoffs.push(source.type + " " + source.number);
       return true;
     };
-    AeroTizen.inputs.show(AeroTizen.inputs.sources[0]);
   });
+  // Choose the Xbox from the side panel.
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.locator('[data-side-rail][data-open="true"]')).toHaveCount(1);
+  await page.evaluate(() => AeroTizen.inputs.show(AeroTizen.inputs.sources[0]));
   expect(await page.evaluate(() => window.handoffs)).toEqual(["HDMI 1"]);
-  await expect(page.locator("body")).not.toHaveClass(/tv-panel/);
 
-  // The viewer covers the launcher; Home brings it back with the panel on the Xbox.
   await setHidden(page, true);
   await setHidden(page, false);
-  await expect(page.locator("body")).toHaveClass(/tv-panel/);
-  await expect(page.locator("[data-side-rail]")).toBeVisible();
-  await expect(page.locator('[data-side-rail] [data-focused="true"]')).toHaveAttribute("title", "Xbox");
-  await expect(page.locator("[data-shelf-meta]")).toBeHidden();
-
-  // Arrows move in the panel while it is open.
-  await page.keyboard.press("ArrowUp");
-  expect(await page.evaluate(() => AeroTizen.inputs.peeking)).toBe(true);
-
-  // Right (or Back) closes the panel and gives the screen back to the console.
-  await page.keyboard.press("ArrowRight");
-  expect(await page.evaluate(() => window.handoffs)).toEqual(["HDMI 1", "HDMI 1"]);
   expect(await page.evaluate(() => AeroTizen.inputs.peeking)).toBe(false);
-  await expect(page.locator("body")).not.toHaveClass(/\btv\b/);
+  await expect(page.locator("body")).not.toHaveClass(/\btv\b|tv-panel/);
+  await expect(page.locator('[data-side-rail][data-open="true"]')).toHaveCount(0);
+  await expect(page.locator("[data-cinema-home]")).toBeVisible();
 
-  // Home again later, then Settings in the panel leaves the input for AeroTizen's Home.
+  // A later return (e.g. from an app) is not mistaken for Home from the Xbox.
   await page.waitForTimeout(1100);
   await setHidden(page, true);
   await setHidden(page, false);
-  await expect(page.locator("body")).toHaveClass(/tv-panel/);
-  await page.keyboard.press("ArrowUp");
-  await page.keyboard.press("ArrowUp");
-  await page.keyboard.press("ArrowUp");
-  await page.keyboard.press("Enter");
-  expect(await page.evaluate(() => AeroTizen.inputs.peeking)).toBe(false);
-  await expect(page.locator("body")).not.toHaveClass(/tv-panel/);
-  expect(await page.evaluate(() => window.handoffs.length)).toBe(2);
+  expect(await page.evaluate(() => window.handoffs.length)).toBe(1);
   expect(errors).toEqual([]);
 });

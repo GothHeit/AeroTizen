@@ -177,7 +177,7 @@
       return;
     }
     // Cinema hands HDMI to Samsung's own viewer too, so the remote reaches the
-    // console over HDMI-CEC. Home there brings the side panel over the game.
+    // console over HDMI-CEC. Home there comes straight back to AeroTizen's Home.
     if (s && cinema() && handOff(s)) {
       return;
     }
@@ -216,34 +216,15 @@
   var FULL_SCREEN = ["0px", "0px", "1920px", "1080px"];
   // The input on screen: embedded here while `watching`, or handed to Samsung's viewer.
   var current = null,
-    handedOff = null,
-    overViewer = false,
-    peekStarted = 0;
+    handedOff = null;
   // One Home press can arrive as an appcontrol event and a visibility change.
   var HOME_SETTLE_MS = 1000;
-  // If showing the picture behind the panel pulls Samsung's viewer back to the front,
-  // remember that and show the panel over black instead from then on.
-  var PICTURE_KEY = "aerotizen.panelPicture";
-  var STEAL_WINDOW_MS = 2500;
 
   function cinema() {
     return A.settings.getSnapshot().cinemaUi === true;
   }
   function sourceKey(s) {
     return "input:" + s.type + ":" + s.number;
-  }
-  function note(name, data) {
-    var log = window.AeroDiagnostics;
-    if (log && log.record) {
-      log.record("inputs." + name, data || {});
-    }
-  }
-  function pictureAllowed() {
-    try {
-      return window.localStorage.getItem(PICTURE_KEY) !== "off";
-    } catch (e) {
-      return true;
-    }
   }
   function hideWindow() {
     try {
@@ -277,71 +258,13 @@
       return;
     }
     inputs.peeking = true;
-    peekStarted = Date.now();
     document.body.classList.add("tv-panel");
     A.homeScreen.peekInput(sourceKey(current));
   };
 
-  // Back from Samsung's viewer: the panel opens over the game's live picture.
-  function panelOverViewer(s) {
-    if (!A.homeScreen || !A.homeScreen.peekInput) {
-      return;
-    }
-    handedOff = null;
-    current = s;
-    overViewer = true;
-    inputs.peeking = true;
-    peekStarted = Date.now();
-    document.body.classList.add("tv", "tv-panel");
-    document.documentElement.style.background = "#000";
-    if (window.Backgrounds) {
-      window.Backgrounds.suspend();
-    }
-    A.homeScreen.peekInput(sourceKey(s));
-    if (!pictureAllowed() || !tz || !tz.tvwindow) {
-      note("panel_without_picture");
-      return;
-    }
-    try {
-      tz.tvwindow.show(
-        function () {
-          if (!overViewer) {
-            return hideWindow();
-          }
-          document.documentElement.style.background = "transparent";
-          note("panel_picture_shown");
-        },
-        function () {
-          note("panel_picture_failed");
-        },
-        FULL_SCREEN,
-        "MAIN"
-      );
-    } catch (e) {
-      note("panel_picture_failed");
-    }
-  }
-
   inputs.endPeek = function () {
     inputs.peeking = false;
     document.body.classList.remove("tv-panel");
-    if (overViewer) {
-      overViewer = false;
-      document.body.classList.remove("tv");
-      document.documentElement.style.background = "";
-      hideWindow();
-      A.applyBackground();
-    }
-  };
-
-  // Closing the panel over the game gives the screen and the remote back to the console.
-  inputs.backToInput = function () {
-    var s = current;
-    var wasOverViewer = overViewer;
-    inputs.endPeek();
-    if (wasOverViewer && s && !handOff(s)) {
-      inputs.leave();
-    }
   };
 
   inputs.leave = function () {
@@ -362,7 +285,12 @@
     }
     homeAt = now;
     if (handedOff && !inputs.peeking) {
-      panelOverViewer(handedOff);
+      // Back from Samsung's viewer: AeroTizen's Home, with the side panel closed.
+      handedOff = null;
+      current = null;
+      if (A.homeScreen && A.homeScreen.closePanel) {
+        A.homeScreen.closePanel();
+      }
     } else if (inputs.peeking) {
       // Home again: AeroTizen's own Home.
       inputs.leave();
@@ -404,18 +332,6 @@
   var inputWasHidden = false;
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) {
-      if (overViewer && Date.now() - peekStarted < STEAL_WINDOW_MS) {
-        // The TV put its viewer back in front as soon as the picture was shown here.
-        note("panel_picture_stolen");
-        try {
-          window.localStorage.setItem(PICTURE_KEY, "off");
-        } catch (e) {
-          /* storage unavailable */
-        }
-        var s = current;
-        inputs.endPeek();
-        handedOff = s;
-      }
       inputWasHidden = inputs.watching || !!handedOff;
       return;
     }
