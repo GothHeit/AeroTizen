@@ -74,7 +74,7 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
           ) : null}
         </main>
       </div>
-      <SideRail env={env} />
+      <SideRail env={env} image={backdrop} />
       <AppActionsMenu env={env} />
     </div>
   );
