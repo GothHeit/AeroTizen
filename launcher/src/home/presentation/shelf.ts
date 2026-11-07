@@ -1,6 +1,7 @@
-import { custom, fallback, wallpapers } from "virtual:shelf-images";
+import { custom, fallback } from "virtual:shelf-images";
 
 import type { ContinueItem, InstalledApp } from "../../contracts/launcher";
+import { SHELF_BLACK } from "../../contracts/wallpapers";
 
 const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
@@ -43,13 +44,13 @@ export const getContinueFeature = (
 /** A CSS url() that survives quotes, spaces and parentheses in artwork addresses. */
 export const cssUrl = (path: string) => 'url("' + path.replace(/["\\\n\r]/g, (char) => encodeURIComponent(char)) + '")';
 
-/** Wallpapers the user can pin to the shelf, with a small copy of each for Settings. */
-export const SHELF_WALLPAPERS = wallpapers.map((path) => ({
-  path,
-  thumb: path.replace(/\/([^/]+)$/, "/thumbs/$1"),
-  name: path.slice(path.lastIndexOf("/") + 1).replace(/\.[^.]+$/, ""),
-}));
-
-/** The pinned wallpaper, or null when none is set or the file no longer ships. */
-export const getPinnedWallpaper = (path: string, list: readonly string[] = wallpapers) =>
-  path && list.includes(path) ? path : null;
+/**
+ * What sits behind the shelf for a saved choice: undefined lets each app show its own art,
+ * null is plain black (also while a chosen picture is not on the TV yet), otherwise the picture.
+ */
+export const getPinnedWallpaper = (choice: string, current: string | null): string | null | undefined => {
+  if (!choice) {
+    return undefined;
+  }
+  return choice === SHELF_BLACK ? null : current;
+};

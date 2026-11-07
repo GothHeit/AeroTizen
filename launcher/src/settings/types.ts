@@ -21,6 +21,7 @@ import type {
   WeatherLocation,
 } from "../contracts/preferences";
 import type { LauncherUpdateNotice } from "../contracts/updates";
+import type { WallpaperLibrary } from "../contracts/wallpapers";
 import type { MessageKey } from "../shared/i18n/catalogues";
 import type { Navigation } from "../shared/navigation/createNavigation";
 import type { MutableStore, Store } from "../shared/state/createStore";
@@ -60,6 +61,7 @@ export interface SettingsServices {
   searchLocations(query: string, done: (results: WeatherLocation[] | null) => void): () => void;
   showPreviewMessage(): void;
   useSamsungHome(): void;
+  wallpapers: WallpaperLibrary;
 }
 export interface SettingsActions {
   adjustColour(channel: ColourChannel, direction: number): void;

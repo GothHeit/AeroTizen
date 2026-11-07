@@ -18,7 +18,8 @@ const widgetAssets = (output: string): Plugin => ({
     await rm(output, { recursive: true, force: true });
     await cp(source, output, {
       recursive: true,
-      filter: (file) => file !== path.join(source, "src"),
+      // Top Shelf pictures load from GitHub at runtime, so a local wallpapers folder never ships.
+      filter: (file) => file !== path.join(source, "src") && file !== path.join(source, "assets", "wallpapers"),
     });
     await mkdir(path.join(output, "licenses"), { recursive: true });
     await cp(path.join(root, "node_modules/preact/LICENSE"), path.join(output, "licenses/preact.txt"));
@@ -30,7 +31,6 @@ const widgetAssets = (output: string): Plugin => ({
 
 // Lists Top Shelf images at build time. Drop JPEG/PNG/WebP files into launcher/assets/shelf;
 // the weather scenes are used until any exist. Images ship as files, never inlined.
-// launcher/assets/wallpapers holds pictures the user can pin to the shelf, with small copies in thumbs/.
 const SHELF_MODULE = "virtual:shelf-images";
 const shelfImages: Plugin = {
   name: "aerotizen-shelf-images",
@@ -52,9 +52,6 @@ const shelfImages: Plugin = {
       ";\n" +
       "export const fallback = " +
       JSON.stringify(await list("weather")) +
-      ";\n" +
-      "export const wallpapers = " +
-      JSON.stringify(await list("wallpapers")) +
       ";\n"
     );
   },

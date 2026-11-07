@@ -35,8 +35,10 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   const topRow = firstIds.slice(0, TOP_ROW).map((id) => "app:" + id);
   const shelfKey = topRow.includes(rail ?? selected) ? (rail ?? selected) : topRow[0];
   const shelfApp = shelfKey ? apps.find((app) => "app:" + app.id === shelfKey) || null : null;
-  const pinned = getPinnedWallpaper(settings.shelfWallpaper);
-  const backdrop = pinned || (shelfApp ? getShelfImage(shelfApp) : null);
+  const { current } = useStore(env.runtime.wallpapers);
+  const pinned = getPinnedWallpaper(settings.shelfWallpaper, current);
+  const shelfImage = shelfApp ? getShelfImage(shelfApp) : null;
+  const backdrop = pinned === undefined ? shelfImage : pinned;
   const previous = useRef(scroll);
   const crossesShelf = (previous.current === 0) !== (scroll === 0);
   previous.current = scroll;

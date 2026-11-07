@@ -9,15 +9,20 @@ import { mountBackgrounds } from "./backgrounds/mountBackgrounds";
 import type { ClockService } from "./contracts/launcher";
 import type { SettingsService } from "./contracts/preferences";
 import type { NetworkService } from "./contracts/status";
+import type { WallpaperLibrary } from "./contracts/wallpapers";
 import { mountFireplace } from "./fireplace/mountFireplace";
 import { mountHome } from "./home/index";
 import { createClockPlatform } from "./platform/tizen/createClockPlatform";
 import { createNetworkPlatform } from "./platform/tizen/createNetworkPlatform";
 import { defaultTemperatureUnit } from "./platform/tizen/defaultTemperatureUnit";
+import { createWallpaperScaler } from "./platform/tizen/scaleWallpaper";
 import { createClockService } from "./services/createClockService";
 import { createLauncherUpdates } from "./services/createLauncherUpdates";
 import { createNetworkService } from "./services/createNetworkService";
 import { createSettingsService } from "./services/createSettingsService";
+import { createWallpaperCache } from "./services/wallpapers/createWallpaperCache";
+import { createWallpaperLibrary } from "./services/wallpapers/createWallpaperLibrary";
+import { WALLPAPER_SOURCE } from "./services/wallpapers/wallpaperSource";
 import { mountSettings } from "./settings/index";
 
 const backgroundHost = document.getElementById("bg");
@@ -36,6 +41,7 @@ const hotData = import.meta.hot
       clock?: ClockService;
       network?: NetworkService;
       preferences?: SettingsService;
+      wallpapers?: WallpaperLibrary;
     })
   : undefined;
 const clock =
@@ -75,6 +81,23 @@ const network =
     timers: window,
   });
 runtime.network = network;
+const wallpapers =
+  hotData?.wallpapers ||
+  createWallpaperLibrary({
+    source: WALLPAPER_SOURCE,
+    cache: createWallpaperCache(window.indexedDB),
+    choice: {
+      getSnapshot: () => settings.getSnapshot().shelfWallpaper,
+      subscribe: (listener) => settings.subscribe(listener),
+    },
+    fetch: (url, init) => window.fetch(url, init),
+    scale: createWallpaperScaler(window),
+    urls: { create: (blob) => URL.createObjectURL(blob), revoke: (url) => URL.revokeObjectURL(url) },
+    now: () => Date.now(),
+    online: () => navigator.onLine !== false,
+    timers: window,
+  });
+runtime.wallpapers = wallpapers;
 const weather = window.Weather;
 const backgrounds = mountBackgrounds(
   backgroundHost,
@@ -123,6 +146,7 @@ try {
       hotData.clock = clock;
       hotData.preferences = settings;
       hotData.network = network;
+      hotData.wallpapers = wallpapers;
       app.dispose();
       dispose();
     });
