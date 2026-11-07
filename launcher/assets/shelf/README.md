@@ -9,3 +9,13 @@ The Cinema layout shows them behind the top row of apps.
 - While this folder has no images, the launcher's weather scenes are used.
 
 Keep images under about 500 KB each; the TV decodes them on a modest chip.
+
+## Pinned Top Shelf picture (Settings > Backgrounds)
+
+Pictures you can pin from Settings are not bundled. The launcher reads the
+`launcher/assets/wallpapers` folder on the `wallpapers` branch of GothHeit/AeroTizen
+through the GitHub API and downloads each file from jsDelivr at that commit.
+To add one, push a 1920×1080 JPEG (quality ~88) to that folder; the TV picks it up the
+next time Settings opens or "Check for new pictures" is pressed. The TV makes its own
+small copies for the picker and keeps the chosen picture, so the shelf still works
+offline. With nothing saved yet, the shelf stays black.

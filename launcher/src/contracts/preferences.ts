@@ -34,7 +34,7 @@ export interface SettingsValues {
   inputNames: Record<string, string>;
   language: string;
   numerals: "latn" | "arab";
-  /** Wallpaper pinned to the Cinema Top Shelf; empty means each app shows its own picture. */
+  /** Cinema Top Shelf picture: "" lets each app show its own art, "black" is plain black, else a file name on GitHub. */
   shelfWallpaper: string;
   showLiveTv: boolean;
   showNetwork: boolean;

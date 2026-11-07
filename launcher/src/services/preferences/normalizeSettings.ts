@@ -71,7 +71,8 @@ export const normalizeSettings = (
       typeof data.speed === "number" && Number.isFinite(data.speed)
         ? Math.max(speedRange.MIN, Math.min(speedRange.MAX, data.speed))
         : defaults.speed,
-    shelfWallpaper: text(data.shelfWallpaper, defaults.shelfWallpaper),
+    // Older builds saved a bundled path such as "assets/wallpapers/1.jpg"; GitHub pictures go by file name.
+    shelfWallpaper: text(data.shelfWallpaper, defaults.shelfWallpaper).replace(/^.*\//, ""),
     showWeather: boolean(data.showWeather, defaults.showWeather),
     showTime: boolean(data.showTime, defaults.showTime),
     showNetwork: boolean(data.showNetwork, defaults.showNetwork),

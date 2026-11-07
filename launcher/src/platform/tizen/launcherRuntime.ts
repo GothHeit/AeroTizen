@@ -12,6 +12,7 @@ import type {
 } from "../../contracts/launcher";
 import type { SettingsService, WeatherLocation } from "../../contracts/preferences";
 import type { NetworkService, WeatherPhotoSource, WeatherSnapshot } from "../../contracts/status";
+import type { WallpaperLibrary } from "../../contracts/wallpapers";
 import type { MessageKey } from "../../shared/i18n/catalogues";
 import type { Translate } from "../../shared/i18n/createTranslations";
 import type { Store } from "../../shared/state/createStore";
@@ -62,6 +63,8 @@ export interface LauncherRuntime {
   tiles: { describe(app: InstalledApp): AppPresentation };
   toast(message: string): void;
   translate: Translate;
+  /** Top Shelf pictures from GitHub, cached on the TV. */
+  wallpapers: WallpaperLibrary;
 }
 
 export interface LauncherPlatform {

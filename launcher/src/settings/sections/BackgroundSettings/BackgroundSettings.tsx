@@ -5,7 +5,6 @@ import { useLayoutEffect, useState } from "preact/hooks";
 import { normalizeColour } from "../../../backgrounds/colours";
 import { gradientBackground } from "../../../backgrounds/gradients";
 import type { BackgroundOption, LauncherConfig } from "../../../contracts/launcher";
-import { SHELF_WALLPAPERS } from "../../../home/presentation/shelf";
 import { useStore } from "../../../shared/hooks/useStore";
 import { useTranslation } from "../../../shared/i18n/useTranslation";
 import { Icon } from "../../../shared/icons/Icon/Icon";
@@ -15,7 +14,7 @@ import { SettingsHint } from "../../components/SettingsHint/SettingsHint";
 import { SettingsSection } from "../../components/SettingsSection/SettingsSection";
 import { useSettingsEnvironment } from "../../hooks/useSettingsEnvironment";
 import type { SettingsSectionProps } from "../../types";
-import { ShelfWallpaperSwatch } from "../backgrounds/ShelfWallpaperSwatch/ShelfWallpaperSwatch";
+import { ShelfPicturePicker } from "../backgrounds/ShelfPicturePicker/ShelfPicturePicker";
 import { SpeedSlider } from "../backgrounds/SpeedSlider/SpeedSlider";
 import { WallpaperSwatch } from "../backgrounds/WallpaperSwatch/WallpaperSwatch";
 
@@ -109,32 +108,10 @@ export const BackgroundSettings = ({ settings, actions, config, backgrounds: lis
       });
   };
 
-  const pinned = SHELF_WALLPAPERS.some((wallpaper) => wallpaper.path === settings.shelfWallpaper);
-
   return (
     <>
       {settings.cinemaUi ? (
-        <SettingsSection title={t("wallpaper.shelf")} description={t("wallpaper.shelfHint")}>
-          <div id="shelf-wallpapers" class={styles.swatches}>
-            <ShelfWallpaperSwatch
-              focusKey="shelf-wallpaper:"
-              label={t("wallpaper.shelfEachApp")}
-              thumb={null}
-              selected={!pinned}
-              onSelect={() => actions.setShelfWallpaper("")}
-            />
-            {SHELF_WALLPAPERS.map((wallpaper) => (
-              <ShelfWallpaperSwatch
-                key={wallpaper.path}
-                focusKey={"shelf-wallpaper:" + wallpaper.path}
-                label={wallpaper.name}
-                thumb={wallpaper.thumb}
-                selected={wallpaper.path === settings.shelfWallpaper}
-                onSelect={() => actions.setShelfWallpaper(wallpaper.path)}
-              />
-            ))}
-          </div>
-        </SettingsSection>
+        <ShelfPicturePicker choice={settings.shelfWallpaper} onChoose={actions.setShelfWallpaper} />
       ) : null}
       <SettingsSection title={t("wallpaper.type")}>
         <ChoiceGroup
