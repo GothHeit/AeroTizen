@@ -44,6 +44,8 @@ EVENTS = set(
         "watcher.cancelled",
         "watcher.art-status",
         "watcher.launch",
+        "watcher.native-follow",
+        "watcher.native-follow-stop",
         "watcher.checking",
         "watcher.unseen",
         "watcher.unwatched",

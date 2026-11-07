@@ -227,7 +227,7 @@
           null,
           data
         );
-        A.homewatch.watch(cfg.HBBTV_APP_ID);
+        A.homewatch.watch(cfg.HBBTV_APP_ID, true);
         tz.application.launchAppControl(control, cfg.HBBTV_APP_ID, accepted, failed);
       } catch (e) {
         failed(e);

@@ -67,8 +67,9 @@
   A.homewatch = {
     start: start,
     // The launcher is about to open `appId`; Home inside it should come back here.
-    watch: function (appId) {
-      tell("/watch?id=" + encodeURIComponent(A.catalog.preloadedStoreId(appId) || appId));
+    // `hbbtv` marks Samsung's HbbTV host, which Native Home must follow back (see the service).
+    watch: function (appId, hbbtv) {
+      tell("/watch?id=" + encodeURIComponent(A.catalog.preloadedStoreId(appId) || appId) + (hbbtv ? "&hbbtv=1" : ""));
     },
     // Every real app, so the service can tell a cast/launch from elsewhere apart from Home.
     reportApps: function (ids) {

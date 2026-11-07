@@ -969,6 +969,95 @@ test("pending diagnostic storage does not delay Home requests or native mode con
   assert.equal(saves.length, 2);
 });
 
+// Native Home + HbbTV apps, ported from ivarmartin's fork (S95F: SVT Play runs in org.tizen.hbbtv).
+const SVT = "5exPmCT0nz.svtplay";
+function native(options = { capability: false }) {
+  const h = ready(options);
+  assert.equal(h.handoff("hold").code, 200);
+  assert.equal(h.handoff("native").code, 200);
+  assert.equal(h.state().homeControl.mode, "native");
+  h.statuses.set(SELF, { running: true, visible: true });
+  h.advance(1000);
+  return h;
+}
+function leaveToSamsung(h) {
+  h.statuses.set(SELF, { running: true, visible: false });
+  h.statuses.set(SVT, { running: false, visible: true }); // as the S95F reports it
+  h.advance(2000);
+  h.statuses.set(SVT, { running: false, visible: false }); // Home/Back: Samsung Home
+}
+
+test("native: after an HbbTV app leaves to Samsung Home, the launcher returns once", () => {
+  const h = native();
+  h.control("/watch?id=" + SVT + "&hbbtv=1");
+  leaveToSamsung(h);
+  h.advance(900);
+  assert.equal(h.launches.length, 0, "waits out the grace period");
+  h.advance(1500);
+  assert.equal(h.launches.length, 1);
+  assert.equal(h.launches[0].id, SELF);
+  h.statuses.set(SELF, { running: true, visible: false });
+  h.advance(10000);
+  assert.equal(h.launches.length, 1, "follow ends after one return");
+});
+
+test("native: ordinary apps are not followed (native Home handles them)", () => {
+  const h = native();
+  h.control("/watch?id=" + SVT);
+  leaveToSamsung(h);
+  h.advance(10000);
+  assert.equal(h.launches.length, 0);
+});
+
+test("native: nothing happens if the HbbTV app never came on screen", () => {
+  const h = native();
+  h.control("/watch?id=" + SVT + "&hbbtv=1");
+  h.statuses.set(SELF, { running: true, visible: false });
+  h.statuses.set(SVT, { running: false, visible: false });
+  h.advance(70000);
+  assert.equal(h.launches.length, 0);
+});
+
+test("native: Samsung Home escape, launcher return and another app cancel the follow", () => {
+  for (const cancel of ["/leave", "/home", "/watch?id=org.tizen.netflix-app"]) {
+    const h = native();
+    h.control("/watch?id=" + SVT + "&hbbtv=1");
+    leaveToSamsung(h);
+    h.control(cancel);
+    h.advance(10000);
+    assert.equal(h.launches.length, 0, cancel);
+  }
+});
+
+test("native: never over another visible app, never on a Frame, never with the TV off", () => {
+  const other = native();
+  other.control("/apps?ids=org.tizen.netflix-app");
+  other.control("/watch?id=" + SVT + "&hbbtv=1");
+  leaveToSamsung(other);
+  other.statuses.set("org.tizen.netflix-app", { running: true, visible: true });
+  other.advance(10000);
+  assert.equal(other.launches.length, 0, "another app on screen");
+
+  const frame = native({ capability: true });
+  frame.control("/watch?id=" + SVT + "&hbbtv=1");
+  leaveToSamsung(frame);
+  frame.advance(10000);
+  assert.equal(frame.launches.length, 0, "Frame");
+
+  const off = native();
+  off.control("/watch?id=" + SVT + "&hbbtv=1");
+  leaveToSamsung(off);
+  off.setPowerState("standby");
+  off.advance(10000);
+  assert.equal(off.launches.length, 0, "TV not on");
+});
+
+test("watcher mode: the hbbtv flag does not change normal watching", () => {
+  const h = ready({ capability: false });
+  h.control("/watch?id=" + SVT + "&hbbtv=1");
+  assert.equal(h.state().watched, SVT);
+});
+
 let failed = 0;
 for (const [name, fn] of tests) {
   try {

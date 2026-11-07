@@ -46,7 +46,7 @@ function appHarness(metadata, options = {}) {
           },
         },
     tiles: { shortName: (name) => name },
-    homewatch: { watch: (id) => calls.watch.push(id) },
+    homewatch: { watch: (id, hbbtv) => calls.watch.push(hbbtv ? id + " (hbbtv)" : id) },
     toast: (message) => calls.toast.push(message),
   };
   const context = vm.createContext({ window: { AeroTizen: A }, AeroTizen: A });
@@ -64,7 +64,8 @@ test("HbbTV metadata routes arbitrary apps through the shared host", () => {
   const { A, calls } = appHarness((id) => [{ key: metadataKey, value: links[id] }]);
   for (const id of Object.keys(links)) A.apps.launch({ id, name: id });
   assert.deepEqual(calls.metadata, Object.keys(links));
-  assert.deepEqual(calls.watch, [host, host]);
+  // Flagged, so Native Home can follow the host back to AeroTizen (see the watcher service).
+  assert.deepEqual(calls.watch, [host + " (hbbtv)", host + " (hbbtv)"]);
   assert.equal(calls.launch.length, 0);
   for (const [index, id] of Object.keys(links).entries()) {
     assert.equal(calls.control[index].id, host);

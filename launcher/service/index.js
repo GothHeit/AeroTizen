@@ -694,6 +694,140 @@ function updateMode() {
   bootFallback = setTimeout(bootLaunch, BOOT_FALLBACK);
   discoverCapability();
 }
+// Native Home and HbbTV apps, from ivarmartin's fork (tested on a 2025 S95F with SVT Play).
+// Samsung's HbbTV host (org.tizen.hbbtv) sends Home and Back to Samsung Home even when
+// another app is the native Home. In native mode the watcher otherwise stays quiet, so this
+// follows only an HbbTV app the launcher just opened (/watch?id=<app>&hbbtv=1) and brings
+// the launcher back once that app has been on screen and then Samsung Home replaced it.
+// Never on a Frame (Art Mode), only while the TV is on, never over another visible app;
+// cancelled by /home, /leave (Samsung Home escape) and any other /watch.
+var NATIVE_FOLLOW_TICK = 500;
+var NATIVE_FOLLOW_GRACE = 1000; // both hidden this long before acting
+var NATIVE_FOLLOW_NEVER_SEEN = 60000; // give up if the app never comes on screen
+var NATIVE_FOLLOW_MAX = 12 * 3600000; // and after 12 hours in any case
+var nativeFollow = null;
+function stopNativeFollow(reason) {
+  if (!nativeFollow) {
+    return;
+  }
+  clearInterval(nativeFollow.timer);
+  nativeFollow = null;
+  record("native-follow-stop", reason);
+}
+function startNativeFollow(id) {
+  stopNativeFollow("replaced");
+  if (stopped || !id || homeMode.read().mode !== "native") {
+    return;
+  }
+  var follow = { id: id, since: Date.now(), seen: false, hiddenSince: 0, busy: false, timer: null };
+  nativeFollow = follow;
+  record("native-follow", id);
+  follow.timer = setInterval(function () {
+    nativeFollowTick(follow);
+  }, NATIVE_FOLLOW_TICK);
+}
+function nativeFollowTick(follow) {
+  if (nativeFollow !== follow || follow.busy) {
+    return;
+  }
+  if (stopped || homeMode.read().mode !== "native") {
+    stopNativeFollow("mode changed");
+    return;
+  }
+  var now = Date.now();
+  if (now - follow.since > NATIVE_FOLLOW_MAX) {
+    stopNativeFollow("expired");
+    return;
+  }
+  if (!follow.seen && now - follow.since > NATIVE_FOLLOW_NEVER_SEEN) {
+    stopNativeFollow("never on screen");
+    return;
+  }
+  follow.busy = true;
+  function done() {
+    follow.busy = false;
+  }
+  appStatus(SELF, function (me) {
+    if (nativeFollow !== follow) {
+      return done();
+    }
+    if (me && me.visible) {
+      stopNativeFollow("launcher visible");
+      return done();
+    }
+    appStatus(follow.id, function (app) {
+      if (nativeFollow !== follow) {
+        return done();
+      }
+      if (!me || !app) {
+        return done(); // status unavailable: decide nothing this round
+      }
+      if (app.visible) {
+        follow.seen = true;
+        follow.hiddenSince = 0;
+        return done();
+      }
+      if (!follow.seen) {
+        return done();
+      }
+      if (!follow.hiddenSince) {
+        follow.hiddenSince = Date.now();
+        return done();
+      }
+      if (Date.now() - follow.hiddenSince < NATIVE_FOLLOW_GRACE) {
+        return done();
+      }
+      nativeFollowReturn(follow, done);
+    });
+  });
+}
+function nativeFollowReturn(follow, done) {
+  get("/api/v2/", function (info) {
+    if (nativeFollow !== follow) {
+      return done();
+    }
+    var device = info && info.device;
+    if (!device) {
+      return done(); // try again next round
+    }
+    if (device.FrameTVSupport === true || device.FrameTVSupport === "true") {
+      stopNativeFollow("Frame: Art Mode guard");
+      return done();
+    }
+    if (device.PowerState !== "on") {
+      stopNativeFollow("TV not on");
+      return done();
+    }
+    snapshot(function (result) {
+      if (nativeFollow !== follow) {
+        return done();
+      }
+      if (result.visible && result.visible !== follow.id) {
+        stopNativeFollow("another app is on screen");
+        return done();
+      }
+      stopNativeFollow("HbbTV app left to Samsung Home");
+      state.lastLaunch = Date.now();
+      state.guard.launchCalls += 1;
+      record("launch", "native: HbbTV app " + follow.id + " left");
+      try {
+        tizen.application.launch(
+          SELF,
+          function () {
+            state.last = "native relaunch after HbbTV app";
+          },
+          function (e) {
+            state.last = "native relaunch failed: " + (e && e.message);
+          },
+        );
+      } catch (e) {
+        state.last = "native relaunch threw: " + e.message;
+      }
+      done();
+    });
+  });
+}
+
 function controlHome(req, res) {
   function reply(code, value) {
     res.writeHead(code, { "Content-Type": "application/json", "Cache-Control": "no-store" });
@@ -863,6 +997,13 @@ module.exports.onStart = function () {
       state.leaving = false;
       resetWatchedTiming();
       state.watchAt = Date.now();
+    } else if (url.pathname === "/watch") {
+      // Native mode: only HbbTV apps need following; any other app ends a follow.
+      if (query.hbbtv === "1") {
+        startNativeFollow(query.id || null);
+      } else {
+        stopNativeFollow("another app opened");
+      }
     } else if (url.pathname === "/apps") {
       invalidate("app inventory changed");
       state.apps = (query.ids || "").split(",").filter(Boolean);
@@ -871,10 +1012,12 @@ module.exports.onStart = function () {
       invalidate("Samsung Home escape");
       state.leaving = true;
       resetTracking();
+      stopNativeFollow("Samsung Home escape");
     } else if (url.pathname === "/home") {
       invalidate("launcher returned");
       state.leaving = false;
       resetTracking();
+      stopNativeFollow("launcher returned");
     }
     var response = Object.assign({}, state, { art: art.getState(), homeControl: homeMode.read() });
     res.writeHead(200, {
@@ -899,6 +1042,7 @@ module.exports.onExit = function () {
   diagnostics.flushStorage();
   stopped = true;
   invalidate("service exit");
+  stopNativeFollow("service exit");
   scanNumber += 1;
   clearInterval(interval);
   clearTimeout(capabilityRetry);
