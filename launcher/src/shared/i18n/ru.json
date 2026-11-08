@@ -280,6 +280,11 @@
   "home.findApp": "Найти приложение",
   "home.findHint": "Введите название приложения",
   "home.findNone": "Нет подходящих приложений",
+  "appearance.screensaver": "Заставка",
+  "appearance.screensaverHint": "Ваши картинки медленно сменяются, когда главный экран простаивает. Любая кнопка возвращает его.",
+  "appearance.minutes5": "5 минут",
+  "appearance.minutes15": "15 минут",
+  "appearance.hour1": "1 час",
   "appearance.nightDim": "Затемнять ночью",
   "appearance.nightDimHint": "С 23:00 до 7:00 лаунчер темнее. Приложения и входы не затемняются."
 }

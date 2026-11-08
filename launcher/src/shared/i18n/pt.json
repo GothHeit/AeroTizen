@@ -280,6 +280,11 @@
   "home.findApp": "Encontrar um app",
   "home.findHint": "Digite o nome de um app",
   "home.findNone": "Nenhum app encontrado",
+  "appearance.screensaver": "Protetor de tela",
+  "appearance.screensaverHint": "Suas imagens passam devagar quando a tela inicial fica parada. Qualquer botão volta.",
+  "appearance.minutes5": "5 minutos",
+  "appearance.minutes15": "15 minutos",
+  "appearance.hour1": "1 hora",
   "appearance.nightDim": "Escurecer à noite",
   "appearance.nightDimHint": "Das 23h às 7h o launcher fica mais escuro. Apps e entradas não escurecem."
 }

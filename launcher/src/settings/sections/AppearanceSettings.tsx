@@ -21,6 +21,13 @@ const HOME_APP_LAYOUT_OPTIONS = [
   { value: "scroll", labelKey: "appearance.scroll" },
 ] as const;
 
+const SCREENSAVER_OPTIONS = [
+  { value: "0", labelKey: "common.off" },
+  { value: "5", labelKey: "appearance.minutes5" },
+  { value: "15", labelKey: "appearance.minutes15" },
+  { value: "60", labelKey: "appearance.hour1" },
+] as const;
+
 const ON_OFF_OPTIONS = [
   { value: true, labelKey: "common.on" },
   { value: false, labelKey: "common.off" },
@@ -48,6 +55,16 @@ export const AppearanceSettings = ({ settings, actions }: SettingsSectionProps) 
       </SettingsSection>
       {settings.cinemaUi ? (
         <>
+          <SettingsSection title={t("appearance.screensaver")}>
+            <ChoiceGroup
+              id="screensaver-minutes"
+              label={t("appearance.screensaver")}
+              value={String(settings.screensaverMinutes)}
+              options={SCREENSAVER_OPTIONS}
+              onSelect={(value) => actions.setScreensaverMinutes(Number(value))}
+            />
+            <SettingsHint>{t("appearance.screensaverHint")}</SettingsHint>
+          </SettingsSection>
           <SettingsSection title={t("appearance.nightDim")}>
             <ChoiceGroup
               id="night-dim"

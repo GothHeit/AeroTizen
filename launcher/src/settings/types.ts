@@ -88,6 +88,7 @@ export interface SettingsActions {
   setNetworkVisible(visible: boolean): void;
   setNightDim(on: boolean): void;
   setNumerals(numerals: "latn" | "arab"): void;
+  setScreensaverMinutes(minutes: number): void;
   setShelfWallpaper(path: string): void;
   setSpeed(direction: number): void;
   setTempUnit(unit: TemperatureUnit): void;

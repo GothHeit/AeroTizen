@@ -74,6 +74,9 @@ export const normalizeSettings = (
     // Older builds saved a bundled path such as "assets/wallpapers/1.jpg"; GitHub pictures go by file name.
     shelfWallpaper: text(data.shelfWallpaper, defaults.shelfWallpaper).replace(/^.*\//, ""),
     nightDim: boolean(data.nightDim, defaults.nightDim),
+    screensaverMinutes: [0, 5, 15, 60].includes(data.screensaverMinutes)
+      ? (data.screensaverMinutes)
+      : defaults.screensaverMinutes,
     showWeather: boolean(data.showWeather, defaults.showWeather),
     showTime: boolean(data.showTime, defaults.showTime),
     showNetwork: boolean(data.showNetwork, defaults.showNetwork),
