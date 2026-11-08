@@ -8,8 +8,8 @@ import styles from "./Screensaver.module.css";
 const SLIDE_MS = 20000;
 
 /**
- * Cinema screensaver: after the Home sits idle, the Top Shelf pictures drift slowly, one
- * after another, with no clock. Any button wakes the Home and is not passed on. Opacity and
+ * Cinema screensaver: after the Home sits idle, kafka's wallpapers drift slowly, one after
+ * another, with no clock. Any button wakes the Home and is not passed on. Opacity and
  * transform only, so it costs the TV almost nothing. Inspired by SompLy's idle screensaver.
  */
 export const Screensaver = ({
@@ -87,18 +87,54 @@ export const Screensaver = ({
     };
   }, [env, minutes]);
 
+  // Each picture is loaded before it fades in, so a slow or missing download never shows a
+  // half-drawn frame. A picture that fails is skipped; if none loads, the screen stays black.
+  const [image, setImage] = useState<string | null>(null);
+  const key = images.join("\n");
   useEffect(() => {
-    if (!shown || images.length < 2) {
+    if (!shown) {
+      setImage(null);
       return undefined;
     }
-    const timer = window.setInterval(() => setSlide((index) => index + 1), SLIDE_MS);
-    return () => window.clearInterval(timer);
-  }, [shown, images.length]);
+    const list = key ? key.split("\n") : [];
+    let live = true;
+    let probe: HTMLImageElement | null = null;
+    let next = 0;
+    let timer: number | undefined;
+    const show = (tries: number) => {
+      if (!live || !list.length || tries >= list.length) {
+        return;
+      }
+      const src = list[next % list.length];
+      next += 1;
+      probe = new Image();
+      probe.onload = () => {
+        if (!live) {
+          return;
+        }
+        setImage(src);
+        setSlide((index) => index + 1);
+        if (list.length > 1) {
+          timer = window.setTimeout(() => show(0), SLIDE_MS);
+        }
+      };
+      probe.onerror = () => show(tries + 1);
+      probe.src = src;
+    };
+    show(0);
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+      if (probe) {
+        probe.onload = null;
+        probe.onerror = null;
+      }
+    };
+  }, [shown, key]);
 
   if (!shown) {
     return null;
   }
-  const image = images.length ? images[slide % images.length] : null;
   return (
     <div class={styles.screensaver} data-screensaver aria-hidden="true">
       {image ? (

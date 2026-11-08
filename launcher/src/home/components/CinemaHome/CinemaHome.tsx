@@ -52,14 +52,17 @@ export const CinemaHome = ({ env }: { env: HomeEnvironment }) => {
   const pinned = getPinnedWallpaper(settings.shelfWallpaper, current);
   const shelfImage = shelfApp ? getShelfImage(shelfApp) : null;
   const backdrop = pinned === undefined ? shelfImage : pinned;
-  // The screensaver plays the pinned picture and the top row's Top Shelf art.
-  const saverImages = [
-    ...(pinned ? [pinned] : []),
-    ...firstIds.slice(0, TOP_ROW).map((id) => {
-      const app = apps.find((entry) => entry.id === id);
-      return app ? getShelfImage(app) : null;
-    }),
-  ].filter((image, index, list): image is string => Boolean(image) && list.indexOf(image) === index);
+  // The screensaver plays kafka's own wallpapers from GitHub, starting with the chosen one,
+  // which is already saved on the TV. Pictures that fail to load are skipped; none leaves black.
+  const library = useStore(env.runtime.wallpapers);
+  const chosen = settings.shelfWallpaper;
+  const saverImages = library.items.length
+    ? [...library.items.filter((item) => item.name === chosen), ...library.items.filter((item) => item.name !== chosen)]
+        .map((item) =>
+          item.name === chosen && library.current ? library.current : env.runtime.wallpapers.pictureUrl(item.name),
+        )
+        .filter((image): image is string => Boolean(image))
+    : [library.current].filter((image): image is string => Boolean(image));
   const previous = useRef(scroll);
   const crossesShelf = (previous.current === 0) !== (scroll === 0);
   previous.current = scroll;

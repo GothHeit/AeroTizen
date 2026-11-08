@@ -76,6 +76,13 @@ describe("createWallpaperLibrary", () => {
     expect(library.getSnapshot().current).toBeNull();
   });
 
+  it("links each listed picture on jsDelivr for the screensaver", async () => {
+    const { library } = setup();
+    expect(library.pictureUrl("2.jpg")).toBeNull();
+    await flush();
+    expect(library.pictureUrl("2.jpg")).toBe("https://cdn.jsdelivr.net/gh/owner/repo@" + COMMIT + "/pics/2.jpg");
+  });
+
   it("makes small copies for the picker", async () => {
     const { library } = setup();
     await flush();

@@ -75,7 +75,7 @@ export const normalizeSettings = (
     shelfWallpaper: text(data.shelfWallpaper, defaults.shelfWallpaper).replace(/^.*\//, ""),
     nightDim: boolean(data.nightDim, defaults.nightDim),
     screensaverMinutes: [0, 5, 15, 60].includes(data.screensaverMinutes)
-      ? (data.screensaverMinutes)
+      ? data.screensaverMinutes
       : defaults.screensaverMinutes,
     showWeather: boolean(data.showWeather, defaults.showWeather),
     showTime: boolean(data.showTime, defaults.showTime),

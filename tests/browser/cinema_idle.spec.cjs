@@ -30,6 +30,14 @@ test("the screensaver starts on an idle Home and the waking button does nothing 
   await expect(page.locator("[data-side-rail]")).toHaveAttribute("data-open", "false");
 });
 
+test("the screensaver never uses the apps' Top Shelf art; with no wallpapers it is black", async ({ page }) => {
+  await open(page, { screensaverMinutes: 5 });
+  await page.clock.fastForward("05:30");
+  await expect(page.locator("[data-screensaver]")).toHaveCount(1);
+  await page.waitForTimeout(500);
+  await expect(page.locator("[data-screensaver] > div")).toHaveCount(0);
+});
+
 test("a pressed button restarts the idle wait, and Off never starts it", async ({ page }) => {
   await open(page, { screensaverMinutes: 5 });
   await page.clock.fastForward("04:00");

@@ -39,6 +39,8 @@ export interface WallpaperLibrary extends Store<WallpaperLibraryState> {
   /** Downloads and saves a picture before it is chosen. Resolves false when it cannot be fetched. */
   choose(name: string): Promise<boolean>;
   dispose(): void;
+  /** The CDN link to a listed picture, or null before the list is known. Not saved on the TV. */
+  pictureUrl(name: string): string | null;
   /** Asks GitHub for the list. Without force, a recent answer is reused. */
   refresh(force?: boolean): Promise<void>;
   /** Makes small copies for the picker, one picture at a time. */

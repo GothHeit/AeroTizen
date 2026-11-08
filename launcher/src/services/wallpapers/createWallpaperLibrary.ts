@@ -350,6 +350,9 @@ export const createWallpaperLibrary = (options: WallpaperLibraryOptions): Wallpa
     subscribe: store.subscribe,
     choose,
     refresh,
+    pictureUrl(name) {
+      return commit ? pictureUrls(source, commit, name)[0] : null;
+    },
     showThumbs() {
       thumbsWanted = true;
       void pumpThumbs();
