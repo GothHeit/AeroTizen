@@ -87,7 +87,6 @@ export const createSettingsActions = (
     },
     setShelfWallpaper: (shelfWallpaper) => commit({ shelfWallpaper }),
     setNightDim: (nightDim) => commit({ nightDim }),
-    setScreensaverMinutes: (screensaverMinutes) => commit({ screensaverMinutes }),
     setInterfaceStyle: (style) => commit({ glassSettings: style === "glass", cinemaUi: style === "cinema" }),
     setWeatherPhoto: (weatherPhoto) =>
       commit({ weatherPhoto }, () => {

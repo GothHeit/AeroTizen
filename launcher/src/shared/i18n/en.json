@@ -280,11 +280,6 @@
   "home.findApp": "Find an app",
   "home.findHint": "Type an app's name",
   "home.findNone": "No apps match",
-  "appearance.screensaver": "Screensaver",
-  "appearance.screensaverHint": "Your pictures drift slowly after the Home sits idle. Any button wakes it.",
-  "appearance.minutes5": "5 minutes",
-  "appearance.minutes15": "15 minutes",
-  "appearance.hour1": "1 hour",
   "appearance.nightDim": "Dim at night",
   "appearance.nightDimHint": "From 11 PM to 7 AM the launcher is darker. Apps and inputs are not dimmed."
 }

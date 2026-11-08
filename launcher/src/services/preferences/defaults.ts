@@ -8,7 +8,6 @@ export const DEFAULT_SETTINGS: SettingsDefaults = {
   cinemaUi: false,
   shelfWallpaper: "",
   nightDim: true,
-  screensaverMinutes: 15,
   homeCardColumns: 3,
   homeAppLayout: "grid",
   background: "aurora",

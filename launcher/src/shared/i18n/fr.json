@@ -280,11 +280,6 @@
   "home.findApp": "Trouver une app",
   "home.findHint": "Tapez le nom d'une app",
   "home.findNone": "Aucune app ne correspond",
-  "appearance.screensaver": "Économiseur d'écran",
-  "appearance.screensaverHint": "Vos images défilent lentement quand l'accueil reste inactif. N'importe quel bouton le réveille.",
-  "appearance.minutes5": "5 minutes",
-  "appearance.minutes15": "15 minutes",
-  "appearance.hour1": "1 heure",
   "appearance.nightDim": "Assombrir la nuit",
   "appearance.nightDimHint": "De 23 h à 7 h le lanceur est plus sombre. Les apps et entrées ne sont pas assombries."
 }
